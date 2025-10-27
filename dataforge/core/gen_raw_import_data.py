@@ -2,7 +2,7 @@ import pandas as pd
 import os as os
 
 
-def import_data(dir):
+def gen_raw_excel_data(dir):
     data = {}
     i = 0
     name_list = get_name_list(dir)
@@ -19,5 +19,7 @@ def import_data(dir):
 
 
 def get_name_list(dir):
-    name_list = [f for f in os.listdir(dir) if f.lower().endswith(('.xlsx', '.xls'))]
+    name_list = [
+        f for f in os.listdir(dir) if f.lower().endswith(('.xlsx', '.xls'))
+        ]
     return name_list

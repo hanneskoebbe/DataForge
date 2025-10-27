@@ -1,11 +1,10 @@
 import sys
 import numpy as np
-import pandas as pd
 import tkinter as tk
 import copy
 from datetime import datetime
-from tkinter import ttk
 from tkinter import messagebox
+
 
 class AppGUI:
     def __init__(self, select_dir, import_data, extract_params, tool_number, gen_temp_data, gen_import_data, plot_to_pdf):
@@ -19,11 +18,9 @@ class AppGUI:
 
         self.data = None
         self.temp_data = None
-        self.params = []
-        self.custom_params=[]
+        self.custom_params = []
         self.param_widgets = {}
-        self.i_cd=0
-        
+
         self.all_data = {}
 
         self.imp_data = {}
@@ -42,11 +39,11 @@ class AppGUI:
 
         self.arch = {}
 
-        self.temp_arch={}
+        self.temp_arch = {}
 
         self.export_data = {}
 
-        self.mean_data={}
+        self.mean_data = {}
 
         self.root = tk.Tk()
         self.root.title("Wer das liest ist doof!")
@@ -64,7 +61,7 @@ class AppGUI:
         self.frame = tk.Frame(self.root)
         self.frame.pack(padx=20, pady=5, fill="both", expand=True)
 
-        self.head_label=tk.Label(self.frame, text="Parameterliste:", font=("Arial", 20))
+        self.head_label = tk.Label(self.frame, text="Parameterliste:", font=("Arial", 20))
         self.head_label.pack(side="top", fill="x")
 
         # Scrollbarer Bereich
@@ -74,7 +71,11 @@ class AppGUI:
         self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)
 
         # Fenster ID merken
-        self.window_id = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.window_id = self.canvas.create_window(
+            (0, 0),
+            window=self.scrollable_frame,
+            anchor="nw"
+        )
 
         self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
@@ -90,7 +91,7 @@ class AppGUI:
         self.import_button = tk.Button(self.button_frame, text="Messberichte importieren", command=self.on_import)
         self.import_button.pack(side="left", padx=10)
 
-        self.button_par=tk.Button(self.button_frame, text="Parameter hinzufuegen", command=self.add_par)
+        self.button_par = tk.Button(self.button_frame, text="Parameter hinzufuegen", command=self.add_par)
         self.button_par.pack(side="left", padx=10)
 
         self.export_button = tk.Button(self.button_frame, text="PDF exportieren", command=self.on_export)
@@ -103,13 +104,13 @@ class AppGUI:
 
     def gen_widget(self):
         self.canvas.unbind_all("<MouseWheel>")
-        
+
         # Vorherige Checkboxen löschen
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         self.param_widgets.clear()
 
-        self.temp_arch={}
+        self.temp_arch = {}
 
         if self.all_data != {}:
             for param, data in self.all_data.items():  # <-- Nutze all_data
@@ -195,83 +196,95 @@ class AppGUI:
         self.data = self.import_data(import_dir)
 
         if not self.data:
-            messagebox.showwarning("Keine Daten", "Keine gültigen Excel-Dateien gefunden.")
+            messagebox.showwarning(
+                "Keine Daten", "Keine gültigen Excel-Dateien gefunden."
+            )
             return
 
-        self.params = self.extract_params(self.data)
-
-        self.imp_data = self.gen_import_data(self.data, self.params)
+        self.imp_data = self.gen_import_data(self.data)
 
         self.gen_all_data()
-
-        print(self.all_data)
 
         self.gen_widget()
 
     def on_export(self):
+        # reset sel_params
         sel_params = []
 
+        # gen sel_params
         for param, widgets in self.param_widgets.items():
             if widgets["var"].get():
                 sel_params.append(param)
 
-        print(sel_params)
+        # reset export_data
+        self.export_data = {}
 
-        self.export_data={}
-
+        # check if a parameter is selected
         if sel_params != []:
+            # gen export_data
             for key, value in self.all_data.items():
                 for param in sel_params:
                     if key == param:
                         self.export_data[key] = copy.deepcopy(value)
 
-            print(self.export_data)
-
+            # get export directory
             export_dir = self.select_dir()
 
-            self.plot_to_pdf(self.export_data, export_dir, self.tool_number(export_dir))
+            # export pdf from export_data
+            self.plot_to_pdf(self.export_data,
+                             export_dir,
+                             self.tool_number(export_dir))
 
     def add_par(self):
+        # gen custom name for parameter
         param_name = f'Custom_{datetime.now().strftime("%Y%m%d%H%M%S")}'
 
-        self.custom_data[param_name]={
-            "pos. nr.": [], 
+        # write empty directory in custom_data
+        self.custom_data[param_name] = {
+            "pos. nr.": [],
             "actual": [],
             "nominal": [],
             "lower tol.": [],
             "upper tol.": []
         }
 
+        # define default values
         self.custom_data[param_name]["pos. nr."].append("Pos. xxx-01")
         self.custom_data[param_name]["actual"].append(0.0)
         self.custom_data[param_name]["nominal"].append(0.0)
         self.custom_data[param_name]["lower tol."].append(-0.015)
         self.custom_data[param_name]["upper tol."].append(0.015)
 
-        self.i_cd = self.i_cd+1
-
         self.gen_all_data()
 
         self.gen_widget()
 
     def gen_all_data(self):
+        # reset all_data
         self.all_data = {}
 
-        # custom_data hinzufügen, wenn vorhanden
+        # add to all_data if not empty
         for source in [self.imp_data, self.custom_data]:
             for key, value in source.items():
                 self.all_data[key] = copy.deepcopy(value)
+
+        # sort all_data alphabetically
         self.all_data = dict(sorted(self.all_data.items(), key=lambda item: item[0].lower()))
 
     def on_input(self, p):
+        # get temp for parameter
         self.get_temp(p)
 
+        # write data from gui into temp
         self.get_data()
 
+        # write temp into imp_data or custom_data
         self.temp_to_data()
 
+        # update all_data
         self.gen_all_data()
 
+        # update gui
         self.gen_widget()
 
     def get_data(self):
@@ -282,7 +295,7 @@ class AppGUI:
         keys = ["pos. nr.", "actual", "nominal", "upper tol.", "lower tol."]
 
         del self.temp[list(self.temp.keys())[0]]
-        self.temp[self.param_widgets[param]["par_name"].get()]={}
+        self.temp[self.param_widgets[param]["par_name"].get()] = {}
 
         for key in keys:
             self.temp[self.param_widgets[param]["par_name"].get()][key] = ["" for _ in range(n0)]
@@ -295,21 +308,24 @@ class AppGUI:
                     self.temp[self.param_widgets[param]["par_name"].get()][key][i] = self.param_widgets[param]["tol_low"].get()
 
     def get_temp(self, param):
+        # check if parameter exists
         if param not in self.all_data:
             print(f"Parameter '{param}' nicht in all_data gefunden.")
             return
-        
-        # Temp-Container zurücksetzen
+
+        # reset temp
         self.temp = {}
 
-        # Die Daten des angeklickten Parameters übernehmen
+        # write directory from all_data to temp for parameter
         self.temp[param] = copy.deepcopy(self.all_data[param])
+
+        # write temp into temp archive to not lose temp while changing it
         self.temp_arch[param] = copy.deepcopy(self.temp[param])
 
     def temp_to_data(self):
         param = list(self.temp_arch.keys())[0]
 
-        # Datenquelle suchen: zuerst imp_data, dann custom_data
+        # define data_source: imp_data + custom_data
         data_sources = [self.imp_data, self.custom_data]
 
         for source in data_sources:
@@ -337,17 +353,17 @@ class AppGUI:
                         source[list(self.temp.keys())[0]][key][i] = value
                 break  # Parameter wurde gefunden → keine weitere Suche nötig
 
-    def edit_data(self,param):
-        self.get_temp(param)
+    def edit_data(self, p):
+        self.get_temp(p)
 
-        AppEDIT(self,param)
+        AppEDIT(self, p)
 
-    def on_remove(self,p):
+    def on_remove(self, p):
         print("on remove")
         self.get_temp(p)
 
         for p in self.temp:
-            self.arch[p] = copy.deepcopy(self.temp[p])        
+            self.arch[p] = copy.deepcopy(self.temp[p])
 
         data_sources = [self.imp_data, self.custom_data]
 
@@ -379,8 +395,8 @@ class AppGUI:
             menu.grab_release()
 
     def on_duplicate(self, p):
-        p_=f"{p}_copy_{datetime.now().strftime("%Y%m%d%H%M%S")}"
-        
+        p_ = f"{p}_copy_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
         for p in self.temp:
             self.custom_data[p_] = copy.deepcopy(self.temp[p])
 
@@ -409,7 +425,7 @@ class AppGUI:
 
         fr = tk.Frame(win, bg="white")
         fr.pack(padx=10, pady=10, fill="both", expand=True)
-        
+
         fr_canvas = tk.Frame(fr, bg="white")
         fr_canvas.pack(fill="both", expand=True)
 
@@ -440,17 +456,17 @@ class AppGUI:
             selection_vars[opt] = var
 
         fr_button = tk.Frame(fr, height=12, bg="white")
-        fr_button.pack(fill="x", pady=(5,0))
+        fr_button.pack(fill="x", pady=(5, 0))
 
         def apply_selection():
             try:
                 selected = [opt for opt, var in selection_vars.items() if var.get()]
-                
+
                 if selected != []:
-                    self.mean_data={}
+                    self.mean_data = {}
 
                     for par in selected:
-                        self.mean_data[par]=copy.deepcopy(self.all_data[par])
+                        self.mean_data[par] = copy.deepcopy(self.all_data[par])
 
                     n_0 = len(self.mean_data[selected[0]]['actual'])
 
@@ -479,7 +495,7 @@ class AppGUI:
                         if key == "actual" or key == "nominal":
                             self.temp[p][key] = [0.0] * n_0
                             for i in range(n_0):
-                                self.temp[p][key][i]=round(np.mean([self.mean_data[par][key][i] for par in self.mean_data]), 7)
+                                self.temp[p][key][i] = round(np.mean([self.mean_data[par][key][i] for par in self.mean_data]), 7)
                         if key == "lower tol.":
                             self.temp[p][key] = [lower_tol] * n_0
                         if key == "upper tol.":
@@ -495,21 +511,23 @@ class AppGUI:
         win.update_idletasks()
         canvas.configure(scrollregion=canvas.bbox("all"))
 
-        button=tk.Button(fr_button, text="OK", command=apply_selection)
+        button = tk.Button(fr_button, text="OK", command=apply_selection)
         button.pack(side="bottom")
-    
+
     def on_restore(self, p):
         print(p)
+        print(self.arch)
+
 
 class AppEDIT:
-    def __init__(self,app_gui,param):
+    def __init__(self, app_gui, param):
         self.app_gui = app_gui
-        self.param=param
+        self.param = param
 
-        self.i_dat=0
+        self.i_dat = 0
         self.dat_entries = []  # Liste, um die Daten-Eingabefelder zu speichern
 
-        self.root = tk.Toplevel(self.app_gui.root) 
+        self.root = tk.Toplevel(self.app_gui.root)
         self.root.title("Daten Eingabe")
         self.root.geometry("1200x400")
         self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
@@ -537,10 +555,9 @@ class AppEDIT:
         # Scrollable-Frame an Canvas-Breite anpassen
         self.canvas.bind("<Configure>", lambda event: self.canvas.itemconfig(self.window_id, width=event.width))
 
-        #self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        self.canvas.pack(side="left", fill="both", padx=(10,10), expand=True)
+        self.canvas.pack(side="left", fill="both", padx=(10, 10), expand=True)
         self.scrollbar.pack(side="right", fill="y", expand=False)
 
         # Zeilen für die Labels und Eingabefelder direkt in der scrollbaren Fläche
@@ -560,26 +577,26 @@ class AppEDIT:
 
         self.lower_tol_label = tk.Label(self.scrollable_frame, text="untere Tol.")
         self.lower_tol_label.grid(row=0, column=4, sticky="ew", padx=10, pady=2)
-        
+
         for col in range(5):
             self.scrollable_frame.grid_columnconfigure(col, weight=1, uniform="equal")
 
-        self.footer_fr=tk.Frame(self.frame)
-        self.footer_fr.pack(pady=(10,10))
+        self.footer_fr = tk.Frame(self.frame)
+        self.footer_fr.pack(pady=(10, 10))
 
-        self.add_button=tk.Button(self.footer_fr, text="Datensatz hinzufügen", command=lambda: self.on_add())
+        self.add_button = tk.Button(self.footer_fr, text="Datensatz hinzufügen", command=lambda: self.on_add())
         self.add_button.pack(side="left", padx=10)
 
-        self.del_button=tk.Button(self.footer_fr, text="Datensatz entfernen", command=lambda: self.on_del())
+        self.del_button = tk.Button(self.footer_fr, text="Datensatz entfernen", command=lambda: self.on_del())
         self.del_button.pack(side="left", padx=10)
 
-        self.confirm_button=tk.Button(self.footer_fr, text="Datenreihe importieren", command=lambda: self.on_accept())
+        self.confirm_button = tk.Button(self.footer_fr, text="Datenreihe importieren", command=lambda: self.on_accept())
         self.confirm_button.pack(side="left", padx=10)
 
         self.on_open()
 
     def on_open(self):
-        param = list(self.app_gui.temp.keys())[0]  # z. B. "004_1" oder "Custom-Parameter-1"
+        param = list(self.app_gui.temp.keys())[0]
 
         num_rows = len(self.app_gui.temp[param]["actual"])
 
@@ -596,8 +613,8 @@ class AppEDIT:
             ]
 
             for j, entry in enumerate(row_entries):
-                    entry.delete(0, tk.END)
-                    entry.insert(0, row_data[j])
+                entry.delete(0, tk.END)
+                entry.insert(0, row_data[j])
 
     def add_entry(self):
         print("add")
@@ -640,13 +657,13 @@ class AppEDIT:
 
     def on_del(self):
         self.del_entry()
-        
+
         self.get_data()
 
     def on_accept(self):
         self.get_data()
 
-        param = list(self.app_gui.temp.keys())[0]  # z. B. "Punktabstand_Punkt1"
+        param = list(self.app_gui.temp.keys())[0]
 
         # Datenquelle suchen: zuerst imp_data, dann custom_data
         data_sources = [self.app_gui.imp_data, self.app_gui.custom_data]
@@ -678,7 +695,7 @@ class AppEDIT:
         self.root.destroy()
 
     def get_data(self):
-        param = list(self.app_gui.temp.keys())[0]  # z. B. "004_1" oder "Custom-Parameter-1"
+        param = list(self.app_gui.temp.keys())[0]
 
         keys = ["pos. nr.", "actual", "nominal", "upper tol.", "lower tol."]
 

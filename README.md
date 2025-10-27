@@ -38,5 +38,5 @@ Voraussetzung: **Python 3.10+**
 # Klonen und Setup ausführen
 git clone https://github.com/hanneskoebbe/DataForge.git
 cd DataForge
-.\setup.ps1
+./setup.ps1
 ```

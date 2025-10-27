@@ -1,8 +1,7 @@
-def gen_import_data(data):
-    # init directory
-    import_data = {}
+def gen_import_data(self, data):
+    self.import_data = {}
 
-    for report_idx, df in data.items():
+    for _, df in data.items():
         # clean dataframe
         df_clean = df.iloc[12:].reset_index(drop=True)
         df_clean.columns = df.iloc[11]
@@ -15,8 +14,8 @@ def gen_import_data(data):
             param = row["Characteristic"]
 
             # default
-            if param not in import_data:
-                import_data[param] = {
+            if param not in self.import_data:
+                self.import_data[param] = {
                     "pos. nr.": [],
                     "actual": [],
                     "nominal": [],
@@ -24,10 +23,8 @@ def gen_import_data(data):
                     "lower tol.": [],
                 }
 
-            import_data[param]["pos. nr."].append(part_no)
-            import_data[param]["actual"].append(row["Actual"])
-            import_data[param]["nominal"].append(row["Nominal"])
-            import_data[param]["upper tol."].append("0.015")
-            import_data[param]["lower tol."].append("-0.015")
-
-    return import_data
+            self.import_data[param]["pos. nr."].append(part_no)
+            self.import_data[param]["actual"].append(row["Actual"])
+            self.import_data[param]["nominal"].append(row["Nominal"])
+            self.import_data[param]["upper tol."].append("0.015")
+            self.import_data[param]["lower tol."].append("-0.015")
