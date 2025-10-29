@@ -4,8 +4,6 @@ import tkinter as tk
 def widgets(self):
     event = ["<MouseWheel>", "<Double-Button-1>", "<Return>"]
 
-    self.canvas.unbind_all(event[0])
-
     # Vorherige Checkboxen löschen
     for widget in self.scrollable_frame.winfo_children():
         widget.destroy()
@@ -94,4 +92,8 @@ def widgets(self):
                 "tol_low": tol_low,
                 "tol_up": tol_up
             }
-        self.canvas.bind_all(event[0], self.on_mousewheel)
+
+        self.canvas.bind_all(
+            event[0],
+            lambda e: self.on_mousewheel(e, self.canvas)
+        )
