@@ -13,11 +13,16 @@ class Events:
         sys.exit()
 
     def on_mousewheel(self, event, canvas):
-        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        if event.delta:
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        elif event.num == 4:
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            canvas.yview_scroll(1, "units")
 
     def on_import(self):
         # dialog to choose directory
-        import_dir = self.select_dir()
+        import_dir = self.app.gui.select_dir()
 
         # quit if no directory is choosen
         if not import_dir:
@@ -41,7 +46,7 @@ class Events:
         self.app.core.gen_all_data()
 
         # update gui
-        self.app.core.widget()
+        self.app.core.widgets()
 
     def on_export(self):
         # empty sel_params
@@ -77,7 +82,7 @@ class Events:
         param_name = f'Custom_{datetime.now().strftime("%Y%m%d%H%M%S")}'
 
         # write empty directory in custom_data
-        self.app.custom_data[param_name] = {
+        self.app.data_store.custom_data[param_name] = {
             "pos. nr.": [],
             "actual": [],
             "nominal": [],
@@ -86,17 +91,33 @@ class Events:
         }
 
         # define default values
-        self.app.custom_data[param_name]["pos. nr."].append("Pos. xxx-01")
-        self.app.custom_data[param_name]["actual"].append(0.0)
-        self.app.custom_data[param_name]["nominal"].append(0.0)
-        self.app.custom_data[param_name]["lower tol."].append(-0.015)
-        self.app.custom_data[param_name]["upper tol."].append(0.015)
+        self.app.data_store.custom_data[param_name]["pos. nr."].append("Pos. xxx-01")
+        self.app.data_store.custom_data[param_name]["actual"].append(0.0)
+        self.app.data_store.custom_data[param_name]["nominal"].append(0.0)
+        self.app.data_store.custom_data[param_name]["lower tol."].append(-0.015)
+        self.app.data_store.custom_data[param_name]["upper tol."].append(0.015)
 
         # generate all_data
         self.app.core.gen_all_data()
 
         # update gui
-        self.app.gui.widget()
+        self.app.gui.widgets()
+
+    def on_input(self, p):
+        # get temp for parameter
+        self.app.core.get_temp(p)
+
+        # write data from gui into temp
+        self.app.core.get_data()
+
+        # write temp into imp_data or custom_data
+        self.app.core.temp_to_data()
+
+        # update all_data
+        self.app.core.gen_all_data()
+
+        # update gui
+        self.app.gui.widgets()
 
     def on_edit(self, p):
         self.app.core.get_temp(p)
@@ -104,7 +125,7 @@ class Events:
         self.app.gui.edit_window(p)
 
     def on_edit_add(self):
-        self.app.gui.add_entry()
+        self.app.gui.add_edit_entry()
 
         self.app.core.get_edit_data()
 
@@ -122,10 +143,28 @@ class Events:
 
         self.app.gui.canvas.unbind_all("<MouseWheel>")
 
-        self.root.destroy()
+        self.app.gui.root.destroy()
 
-    def on_option(self, p):
+    def on_options(self, p):
         self.app.gui.option_menu(p)
+
+    def on_del(self, p):
+        self.app.core.get_temp(p)
+
+        self.app.data_store.arch[p] = copy.deepcopy(self.app.data_store.temp[p])
+
+        data_sources = [
+            self.app.data_store.import_data,
+            self.app.data_store.custom_data
+        ]
+
+        for source in data_sources:
+            if p in source:
+                del source[p]
+
+        self.app.core.gen_all_data()
+
+        self.app.gui.widgets()
 
     def on_duplicate(self, p):
         # new parameter name
@@ -135,8 +174,7 @@ class Events:
         self.app.core.get_temp(p)
 
         # duplicate dataframe
-        for p in self.temp:
-            self.custom_data[p_] = copy.deepcopy(self.temp[p])
+        self.app.data_store.custom_data[p_] = copy.deepcopy(self.app.data_store.temp[p])
 
         # gen all_data
         self.app.core.gen_all_data()
@@ -146,11 +184,11 @@ class Events:
 
     def on_mean(self, p):
         # select parameter
-        selected = self.selection_window(self.app.data_store.all_data)
+        selected = self.app.gui.selection_window(self.app.data_store.all_data)
 
-        if selected != []:
+        if len(selected) >= 2:
             # get temp
-            self.app.data_store.temp[p] = self.app.core.get_temp(p)
+            self.app.core.get_temp(p)
 
             # gen mean_data and write into temp in temp_data
             self.app.core.gen_mean_data(p, selected)
@@ -162,12 +200,16 @@ class Events:
             self.app.core.gen_all_data()
 
             # update gui
-            self.app.gui.widget()
+            self.app.gui.widgets()
 
     def on_restore(self):
         # select parameter
-        selected = self.selection_window(self.app.data_store.arch)
+        selected = self.app.gui.selection_window(self.app.data_store.arch)
 
         # restor dataframe if a parameter is selected
         if selected != []:
             self.app.core.restore_df(selected)
+
+            self.app.core.gen_all_data()
+
+            self.app.gui.widgets()

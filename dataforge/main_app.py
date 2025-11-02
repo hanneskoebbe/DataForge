@@ -1,17 +1,18 @@
 import tkinter as tk
+from dataforge.gui import Gui
+from dataforge.events import Events
+from dataforge.core import Core
+from dataforge.data_store import DataStore
 
 
-class MainAPP:
-    def __init__(
-            self,
-            gui,
-            events,
-            core,
-            data_store):
-        self.gui = gui
-        self.events = events
-        self.core = core
-        self.data_store = data_store
+class MainApp:
+    def __init__(self):
+        super().__init__()
+        self.gui = Gui(self)
+        self.events = Events(self)
+        self.data_store = DataStore()
+        self.core = Core(self)
+        self.run()
 
     def run(self):
         self.root = tk.Tk()
@@ -49,11 +50,18 @@ class MainAPP:
         )
 
         # Scrollable-Frame an Canvas-Breite anpassen
-        self.canvas.bind(
+        self.scrollable_frame.bind(
             "<Configure>",
             lambda event: self.canvas.itemconfig(
                 self.window_id,
-                width=event.width
+                width=getattr(event, "width", 0)
+            )
+        )
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
             )
         )
 
@@ -84,5 +92,5 @@ class MainAPP:
         )
         self.export_button.pack(side="left", padx=10)
 
-        self.widgets()
+        self.gui.widgets()
         self.root.mainloop()

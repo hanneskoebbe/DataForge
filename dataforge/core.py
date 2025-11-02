@@ -10,6 +10,7 @@ from datetime import date
 class Core:
     def __init__(self, app):
         self.app = app
+        self.tolerance = ["lower tol.", "upper tol."]
 
     def gen_raw_excel_data(self, dir):
         data = {}
@@ -63,6 +64,26 @@ class Core:
                 self.app.data_store.import_data[param]["upper tol."].append("0.015")
                 self.app.data_store.import_data[param]["lower tol."].append("-0.015")
 
+    def gen_all_data(self):
+        # reset all_data
+        self.app.data_store.all_data = {}
+
+        data_source = [
+            self.app.data_store.import_data,
+            self.app.data_store.custom_data
+        ]
+
+        # add to all_data if not empty
+        for source in data_source:
+            for key, value in source.items():
+                self.app.data_store.all_data[key] = copy.deepcopy(value)
+
+        # sort all_data alphabetically
+        self.app.data_store.all_data = dict(sorted(
+            self.app.data_store.all_data.items(),
+            key=lambda item: item[0].lower())
+        )
+
     def get_data(self):
         # get param
         param = list(self.app.data_store.temp.keys())[0]
@@ -105,6 +126,9 @@ class Core:
         # reset temp
         self.app.data_store.temp = {}
 
+        # reset temp_arch
+        self.app.data_store.temp_arch = {}
+
         # write directory from all_data to temp for parameter
         self.app.data_store.temp[p] = copy.deepcopy(self.app.data_store.all_data[p])
 
@@ -112,17 +136,20 @@ class Core:
         self.app.data_store.temp_arch[p] = copy.deepcopy(self.app.data_store.temp[p])
 
     def temp_to_data(self):
-        param = list(self.temp_arch.keys())[0]
+        param = list(self.app.data_store.temp_arch.keys())[0]
 
         # init data_source: import_data + custom_data
-        data_sources = [self.import_data, self.custom_data]
+        data_sources = [
+            self.app.data_store.import_data,
+            self.app.data_store.custom_data
+        ]
 
         for source in data_sources:
             if param in source:
                 # delete dataframe if parameter name is changed
-                if param != list(self.temp.keys())[0]:
+                if param != list(self.app.data_store.temp.keys())[0]:
                     del source[param]
-                    source[list(self.temp.keys())[0]] = {}
+                    source[list(self.app.data_store.temp.keys())[0]] = {}
                 # write records in source
                 self.app.core.records_to_source(source)
                 break  # break when parameter is found
@@ -154,7 +181,7 @@ class Core:
         return value
 
     def get_edit_data(self):
-        param = list(self.app_gui.temp.keys())[0]
+        param = list(self.app.data_store.temp.keys())[0]
 
         keys = ["pos. nr.", "actual", "nominal", "upper tol.", "lower tol."]
 
@@ -202,18 +229,14 @@ class Core:
 
         print("Anzahl datensätze immer gleich!")
 
-        tolerance = ["lower tol.", "upper tol."]
-        tol_value = []
+        tol_value = ["", ""]
 
-        for i, tol in enumerate(tolerance):
-            if self.app.data_store.temp[p][tol] == 0:
-                tol_value[i] = self.app.data_store.temp[p][tol]
-            else:
-                tol_value[i] = self.app.data_store.temp[p][tol][0]
+        for i, tol in enumerate(self.tolerance):
+            tol_value[i] = self.app.data_store.temp[p][tol][0]
 
-        self.app.core.mean_to_temp(p, selected, n_0, tolerance, tol_value)
+        self.app.core.mean_to_temp(p, selected, n_0, tol_value)
 
-    def mean_to_temp(self, p, selected, n_0, tolerance, tol_value):
+    def mean_to_temp(self, p, selected, n_0, tol_value):
         keys = self.app.data_store.temp[p].keys()
 
         for key in keys:
@@ -227,9 +250,9 @@ class Core:
                     self.app.data_store.temp[p][key][i] = round(
                         np.mean([self.app.data_store.mean_data[par][key][i] for par in self.app.data_store.mean_data]), 7
                     )
-            elif key == tolerance[0]:
+            elif key == self.tolerance[0]:
                 self.app.data_store.temp[p][key] = [tol_value[0]] * n_0
-            elif key == tolerance[1]:
+            elif key == self.tolerance[1]:
                 self.app.data_store.temp[p][key] = [tol_value[1]] * n_0
 
     def restore_df(self, selected):
