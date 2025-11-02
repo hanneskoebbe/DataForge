@@ -359,7 +359,6 @@ class AppGUI:
         AppEDIT(self, p)
 
     def on_remove(self, p):
-        print("on remove")
         self.get_temp(p)
 
         for p in self.temp:
