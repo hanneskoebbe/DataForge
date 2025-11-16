@@ -1,5 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
 
 
 class Gui:
@@ -176,6 +180,103 @@ class Gui:
                 self.event[0],
                 lambda e: self.app.events.on_mousewheel(e, self.app.canvas)
             )
+
+    def navigation_bar(self):
+        while self.app.navigation_layout.count():
+            if self.app.navigation_layout.takeAt(0).widget():
+                self.app.navigation_layout.widget().deleteLater()
+
+        if self.app.data_store.all_data != {}:
+            for param, data in self.app.data_store.all_data.items():
+                # layout for row frame
+                self.app.row_layout = QHBoxLayout()
+
+                # new row frame for every parameter
+                self.app.row_frame = QWidget()
+                self.app.row_frame.setLayout(self.app.row_layout)
+
+                # label for param
+                self.app.param_label = QLabel(param)
+                self.param_label.setStyleSheet(
+                    "color: #333333;\
+                    font-weight: bold;\
+                    font-size: 14px;"
+                )
+
+                # option button
+                self.option_btn = QPushButton()
+                self.option_btn.clicked.connect(self.app.events.on_options)
+
+                # delete button
+                self.del_btn = QPushButton()
+                self.del_btn.clicked.connect(self.app.events.on_del)
+
+                # add content to row layout
+                self.app.row_layout.addWidget(self.app.param_label)
+                self.app.row_layout.addStretch()
+                self.app.row_layout.addWidget(self.app.option_btn)
+                self.app.row_layout.addWidget(self.app.del_btn)
+
+                # add row frame to navigation bar
+                self.app.navigation_layout.addWidget(self.app.row_frame)
+
+    def plot_all_data(self):
+        idx = "pos. nr."
+        for param, df_dict in self.app.data_store.all_data.items():
+            self.app.plt_frame = ttk.Frame(self.app.notebook)
+            self.app.notebook.add(self.app.plt_frame, text=param)
+
+            # page 1: Plot
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.plot(
+                df_dict.get(idx, []),
+                [float(str(x).replace(",", "."))
+                    for x in df_dict.get("actual", [])],
+                label="actual", marker="o"
+            )
+            plt.plot(
+                df_dict.get(idx, []),
+                [float(str(x).replace(",", "."))
+                    for x in df_dict.get("nominal", [])],
+                label="nominal", linestyle="-", color="green"
+            )
+            plt.plot(
+                df_dict.get(idx, []),
+                [n + u for n, u in zip(
+                    [float(str(x).replace(",", "."))
+                        for x in df_dict.get("nominal", [])],
+                    [float(str(x).replace(",", "."))
+                        for x in df_dict.get("upper tol.", [])]
+                    )],
+                label="upper tol.", linestyle="-", color="red"
+            )
+            plt.plot(
+                df_dict.get(idx, []),
+                [n + l for n, l in zip(
+                    [float(str(x).replace(",", "."))
+                        for x in df_dict.get("nominal", [])],
+                    [float(str(x).replace(",", "."))
+                        for x in df_dict.get("lower tol.", [])]
+                    )],
+                label="lower tol.", linestyle="-", color="red"
+            )
+            plt.title(f"chart: {param}")
+            plt.xlabel("pos. nr.")
+            plt.ylabel("value")
+            plt.legend()
+            plt.grid(True)
+            plt.xticks(df_dict.get(idx, []), rotation=45)
+            plt.tight_layout()
+
+            # Plot in Tkinter-Canvas einbetten
+            self.app.canvas = FigureCanvasTkAgg(
+                fig,
+                master=self.app.plt_frame
+            )
+            self.app.canvas.draw()
+            self.app.canvas.get_tk_widget().pack(fill="both", expand=True)
+
+            plt.close(fig)
 
     def select_dir(self):
         # dialog to choose directory

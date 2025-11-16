@@ -1,18 +1,22 @@
 import tkinter as tk
+from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QScrollArea
+from PyQt6.QtGui import QIcon, QRegion, QPixmap
+from PyQt6.QtCore import Qt, QSize, QRect
+from tkinter import ttk
 from dataforge.gui import Gui
 from dataforge.events import Events
 from dataforge.core import Core
 from dataforge.data_store import DataStore
 
 
-class MainApp:
+class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.gui = Gui(self)
         self.events = Events(self)
         self.data_store = DataStore()
         self.core = Core(self)
-        self.run()
+        self.run2()
 
     def run(self):
         self.root = tk.Tk()
@@ -25,6 +29,14 @@ class MainApp:
 
         self.frame = tk.Frame(self.root)
         self.frame.pack(padx=20, pady=5, fill="both", expand=True)
+
+        # # main-menu frame
+        # self.menu_frame = tk.Frame(self.root)
+        # self.menu_frame.pack(side="top", fill="x")
+
+        # self.start_button = tk.Button(self.menu_frame)
+        # self.start_button.pack(text="Start", side="left")
+
 
         self.head_label = tk.Label(
             self.frame, text="Parameterliste:",
@@ -67,6 +79,11 @@ class MainApp:
 
         self.canvas.pack(side="left", fill="both", expand=True)
 
+        # # notebook
+        # self.notebook = ttk.Notebook(self.root)
+        # self.notebook.pack(fill="both", expand=True)
+        # self.notebook.config(height=400)
+
         # Button-Leiste
         self.button_frame = tk.Frame(self.root)
         self.button_frame.pack(pady=(10, 10))
@@ -88,9 +105,108 @@ class MainApp:
         self.export_button = tk.Button(
             self.button_frame,
             text="PDF exportieren",
-            command=self.events.on_export
+            command=self.gui.plot_all_data
         )
         self.export_button.pack(side="left", padx=10)
 
         self.gui.widgets()
+        self.gui.plot_all_data()
         self.root.mainloop()
+
+    def run2(self):
+        self.setWindowTitle("DataForge")
+
+        # central widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # main frame -> vertical layout
+        self.main_frame = QVBoxLayout(central_widget)
+
+        # menu bar -> horizontal layout
+        self.menu_layout = QHBoxLayout()
+
+        # frame for menu bar
+        self.menu_frame = QWidget()
+        self.menu_frame.setFixedHeight(80)
+        self.menu_frame.setStyleSheet("background: #DEDEDE;")
+        self.menu_frame.setLayout(self.menu_layout)
+
+        # start button
+        self.start_btn = QPushButton()
+        self.start_btn.setFixedSize(60, 60)
+        self.start_btn.setMask(
+            QRegion(
+                QRect(0, 0, 60, 60),
+                QRegion.RegionType.Ellipse
+            )
+        )
+        img = QPixmap("gui/img/start.png").scaled(
+            640,
+            640,
+            Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        self.start_btn.setIcon(QIcon(img))
+        self.start_btn.setIconSize(QSize(60, 60))
+        self.start_btn.setStyleSheet("""
+            QPushButton {
+                border: none;
+                background-color: transparent;
+                border-radius: 30px;
+            }
+        """)
+
+        def start_button_clicked():
+            print("start test 123")
+
+        self.start_btn.clicked.connect(start_button_clicked)
+
+        self.menu_layout.addWidget(self.start_btn)
+        self.menu_layout.addStretch()
+
+        # workspace layout -> hotzontal
+        self.workspace_layout = QHBoxLayout()
+
+        # frame for workspace
+        self.workspace_frame = QWidget()
+        self.workspace_frame.setStyleSheet("background: #FFFFFF;")
+        self.workspace_frame.setLayout(self.workspace_layout)
+
+        # navigation layout -> vertical
+        self.navigation_layout = QVBoxLayout()
+
+        # frame for navigation bar
+        self.navigation_frame = QWidget()
+        self.navigation_frame.setStyleSheet("background: #000000")
+        self.navigation_frame.setLayout(self.navigation_layout)
+
+        # scrollable navigation frame
+        self.nav_scroll = QScrollArea()
+        self.nav_scroll.setWidgetResizable(True)
+        self.nav_scroll.setWidget(self.navigation_frame)
+        self.nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        # add parameter button
+        self.add_btn = QPushButton("+")
+        self.add_btn.setFixedSize(20, 20)
+        self.add_btn.setStyleSheet("background: #FFFFFF")
+
+        # add button to navigation bar
+        self.navigation_layout.addWidget(self.add_btn)
+        self.navigation_layout.addStretch()
+
+        # frame for content
+        self.content_frame = QWidget()
+        self.content_frame.setStyleSheet("background: #EEEEEE")
+
+        # add content to workspace
+        self.workspace_layout.addWidget(self.nav_scroll, 1)
+        self.workspace_layout.addWidget(self.content_frame, 9)
+
+        # add content to main_frame
+        self.main_frame.addWidget(self.menu_frame)
+        self.main_frame.addWidget(self.workspace_frame)
+
+        self.showMaximized()
