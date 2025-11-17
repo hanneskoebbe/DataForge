@@ -101,7 +101,7 @@ class Events:
         self.app.core.gen_all_data()
 
         # update gui
-        self.app.gui.widgets()
+        self.app.gui.navigation_bar()
 
     def on_input(self, p):
         # get temp for parameter
@@ -145,8 +145,8 @@ class Events:
 
         self.app.gui.root.destroy()
 
-    def on_options(self, p):
-        self.app.gui.option_menu(p)
+    def on_options(self, p, widget, pos):
+        self.app.gui.option_menu(p, widget, pos)
 
     def on_del(self, p):
         self.app.core.get_temp(p)
@@ -164,7 +164,8 @@ class Events:
 
         self.app.core.gen_all_data()
 
-        self.app.gui.widgets()
+        # self.app.gui.widgets()
+        self.app.gui.navigation_bar()
 
     def on_duplicate(self, p):
         # new parameter name

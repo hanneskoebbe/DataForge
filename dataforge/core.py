@@ -130,10 +130,14 @@ class Core:
         self.app.data_store.temp_arch = {}
 
         # write directory from all_data to temp for parameter
-        self.app.data_store.temp[p] = copy.deepcopy(self.app.data_store.all_data[p])
+        self.app.data_store.temp[p] = copy.deepcopy(
+            self.app.data_store.all_data[p]
+        )
 
         # write temp into temp archive to not lose temp while changing it
-        self.app.data_store.temp_arch[p] = copy.deepcopy(self.app.data_store.temp[p])
+        self.app.data_store.temp_arch[p] = copy.deepcopy(
+            self.app.data_store.temp[p]
+        )
 
     def temp_to_data(self):
         param = list(self.app.data_store.temp_arch.keys())[0]

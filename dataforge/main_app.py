@@ -175,6 +175,7 @@ class MainApp(QMainWindow):
 
         # navigation layout -> vertical
         self.navigation_layout = QVBoxLayout()
+        self.navigation_layout.setSpacing(0)
 
         # frame for navigation bar
         self.navigation_frame = QWidget()
@@ -192,8 +193,9 @@ class MainApp(QMainWindow):
         self.add_btn = QPushButton("+")
         self.add_btn.setFixedSize(20, 20)
         self.add_btn.setStyleSheet("background: #FFFFFF")
+        self.add_btn.clicked.connect(self.events.on_add_par)
 
-        # add button to navigation bar
+        # add add_btn to navigation bar
         self.navigation_layout.addWidget(self.add_btn)
         self.navigation_layout.addStretch()
 

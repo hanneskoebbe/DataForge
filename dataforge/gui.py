@@ -3,7 +3,8 @@ from tkinter import ttk
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QMenu
+from PyQt6.QtCore import Qt
 
 
 class Gui:
@@ -183,33 +184,42 @@ class Gui:
 
     def navigation_bar(self):
         while self.app.navigation_layout.count():
-            if self.app.navigation_layout.takeAt(0).widget():
-                self.app.navigation_layout.widget().deleteLater()
+            item = self.app.navigation_layout.takeAt(0)
+            if item.widget() is not None:
+                item.widget().deleteLater()
 
         if self.app.data_store.all_data != {}:
             for param, data in self.app.data_store.all_data.items():
                 # layout for row frame
                 self.app.row_layout = QHBoxLayout()
+                self.app.row_layout.setSpacing(0)
 
                 # new row frame for every parameter
                 self.app.row_frame = QWidget()
                 self.app.row_frame.setLayout(self.app.row_layout)
 
+                # bind context menu on right click
+                self.app.row_frame.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                self.app.row_frame.customContextMenuRequested.connect(
+                    lambda pos, p=param, frame=self.app.row_frame:
+                        self.app.events.on_options(p, frame, pos)
+                )
+
                 # label for param
                 self.app.param_label = QLabel(param)
-                self.param_label.setStyleSheet(
+                self.app.param_label.setStyleSheet(
                     "color: #333333;\
                     font-weight: bold;\
                     font-size: 14px;"
                 )
 
-                # option button
-                self.option_btn = QPushButton()
-                self.option_btn.clicked.connect(self.app.events.on_options)
-
                 # delete button
-                self.del_btn = QPushButton()
-                self.del_btn.clicked.connect(self.app.events.on_del)
+                self.app.del_btn = QPushButton()
+                self.app.del_btn.setStyleSheet("background: #FFFFFF")
+                self.app.del_btn.setFixedSize(20, 20)
+                self.app.del_btn.clicked.connect(
+                    lambda checked=False, p=param: self.app.events.on_del(p)
+                )
 
                 # add content to row layout
                 self.app.row_layout.addWidget(self.app.param_label)
@@ -219,6 +229,16 @@ class Gui:
 
                 # add row frame to navigation bar
                 self.app.navigation_layout.addWidget(self.app.row_frame)
+
+        # add parameter button
+        self.app.add_btn = QPushButton("+")
+        self.app.add_btn.setFixedSize(20, 20)
+        self.app.add_btn.setStyleSheet("background: #FFFFFF")
+        self.app.add_btn.clicked.connect(self.app.events.on_add_par)
+
+        # add add_btn to navigation bar
+        self.app.navigation_layout.addWidget(self.app.add_btn)
+        self.app.navigation_layout.addStretch()
 
     def plot_all_data(self):
         idx = "pos. nr."
@@ -400,35 +420,30 @@ class Gui:
 
         return selected
 
-    def option_menu(self, p):
+    def option_menu(self, p, widget, pos):
         # gen menu
-        self.app.gui.menu = tk.Menu(self.app.root, tearoff=0)
+        self.app.gui.menu = QMenu(widget)
 
         # duplicate df
-        self.app.gui.menu.add_command(
-            label="Duplizieren",
-            command=lambda: self.app.events.on_duplicate(p)
+        self.app.gui.action_dup = self.app.gui.menu.addAction("Duplizieren")
+        self.app.gui.action_dup.triggered.connect(
+            lambda checked=False, p=p: self.app.events.on_duplicate(p)
         )
 
         # transform df to mean of dfs
-        self.app.gui.menu.add_command(
-            label="Mittelwert",
-            command=lambda: self.app.events.on_mean(p)
+        self.app.gui.action_mean = self.app.gui.menu.addAction("Mittelwert")
+        self.app.gui.action_mean.triggered.connect(    
+            lambda checked=False, p=p: self.app.events.on_mean(p)
         )
 
         # restore df
-        self.app.gui.menu.add_command(
-            label="Wiederherstellen",
-            command=lambda: self.app.events.on_restore()
+        self.app.gui.action_restore = self.app.gui.menu.addAction("Wiederherstellen")
+        self.app.gui.action_restore.triggered.connect(
+            lambda checked=False: self.app.events.on_restore()
         )
 
-        # get cursor porsition
-        try:
-            x = self.app.root.winfo_pointerx()
-            y = self.app.root.winfo_pointery()
-            self.app.gui.menu.tk_popup(x, y)
-        finally:
-            self.app.gui.menu.grab_release()
+        # execution
+        self.app.gui.menu.exec(widget.mapToGlobal(pos))
 
     def edit_window(self, p):
         self.app.gui.i_edit = 0
