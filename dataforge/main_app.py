@@ -199,9 +199,30 @@ class MainApp(QMainWindow):
         self.navigation_layout.addWidget(self.add_btn)
         self.navigation_layout.addStretch()
 
+        # layout for content frame -> vertical
+        self.content_layout = QVBoxLayout()
+        self.content_layout.setSpacing(0)
+
         # frame for content
         self.content_frame = QWidget()
         self.content_frame.setStyleSheet("background: #EEEEEE")
+        self.content_frame.setLayout(self.content_layout)
+
+        # layout for content header -> horizontal
+        self.content_header_layout = QHBoxLayout()
+
+        # frame for content header
+        self.content_header_frame = QWidget()
+        self.content_header_frame.setLayout(self.content_header_layout)
+        self.content_header_frame.setStyleSheet("background: #FFFFFF")
+
+        # frame for content plot
+        self.content_plot_frame = QWidget()
+        self.content_plot_frame.setStyleSheet("background: #000000")
+
+        # add content to layout
+        self.content_layout.addWidget(self.content_header_frame, 2)
+        self.content_layout.addWidget(self.content_plot_frame, 8)
 
         # add content to workspace
         self.workspace_layout.addWidget(self.nav_scroll, 1)

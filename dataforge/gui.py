@@ -206,6 +206,13 @@ class Gui:
                             self.app.events.on_options(p, frame, pos)
                     )
 
+                    # bind left click
+                    self.app.row_frame.mousePressEvent = (
+                        lambda e, p=param:
+                            self.app.events.on_param_selected(p)
+                            if e.button() == Qt.MouseButton.LeftButton else None
+                    )
+
                     # label for param
                     self.app.param_label = QLabel(param)
                     self.app.param_label.setStyleSheet(
@@ -239,6 +246,169 @@ class Gui:
         # add add_btn to navigation bar
         self.app.navigation_layout.addWidget(self.app.add_btn)
         self.app.navigation_layout.addStretch()
+
+    def content_header(self, p, minimum, maximum, sigma, mean):
+        while self.app.content_header_layout.count():
+            item = self.app.content_header_layout.takeAt(0)
+            if item.widget() is not None:
+                item.widget().deleteLater()
+
+        # param layout -> vertical
+        self.app.param_layout = QVBoxLayout()
+
+        # param frame
+        self.app.param_frame = QWidget()
+        self.app.param_frame.setLayout(self.app.param_layout)
+
+        # param title label
+        self.app.content_param_label_title = QLabel("Parameter:")
+        self.app.content_param_label_title.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # param label
+        self.app.content_param_label = QLabel(p)
+        self.app.content_param_label.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # add to param layout
+        self.app.param_layout.addWidget(self.app.content_param_label_title)
+        self.app.param_layout.addWidget(self.app.content_param_label)
+        self.app.param_layout.addStretch()
+
+        # min layout -> vertical
+        self.app.min_layout = QVBoxLayout()
+
+        # min frame
+        self.app.min_frame = QWidget()
+        self.app.min_frame.setLayout(self.app.min_layout)
+
+        # min title label
+        self.app.min_label_title = QLabel("Min:")
+        self.app.min_label_title.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # min label
+        self.app.min_label = QLabel(str(minimum))
+        self.app.min_label.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # add to min layout
+        self.app.min_layout.addWidget(self.app.min_label_title)
+        self.app.min_layout.addWidget(self.app.min_label)
+        self.app.min_layout.addStretch()
+
+        # max layout -> vertical
+        self.app.max_layout = QVBoxLayout()
+
+        # max frame
+        self.app.max_frame = QWidget()
+        self.app.max_frame.setLayout(self.app.max_layout)
+
+        # max title label
+        self.app.max_label_title = QLabel("Max:")
+        self.app.max_label_title.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # max label
+        self.app.max_label = QLabel(str(maximum))
+        self.app.max_label.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # add to max layout
+        self.app.max_layout.addWidget(self.app.max_label_title)
+        self.app.max_layout.addWidget(self.app.max_label)
+        self.app.max_layout.addStretch()
+
+        # sigma layout -> vertical
+        self.app.sigma_layout = QVBoxLayout()
+
+        # sigma frame
+        self.app.sigma_frame = QWidget()
+        self.app.sigma_frame.setLayout(self.app.sigma_layout)
+
+        # sigma title label
+        self.app.sigma_label_title = QLabel("Standardabweichung:")
+        self.app.sigma_label_title.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # sigma label
+        self.app.sigma_label = QLabel(str(sigma))
+        self.app.sigma_label.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # add to sigma layout
+        self.app.sigma_layout.addWidget(self.app.sigma_label_title)
+        self.app.sigma_layout.addWidget(self.app.sigma_label)
+        self.app.sigma_layout.addStretch()
+
+        # mean layout -> vertical
+        self.app.mean_layout = QVBoxLayout()
+
+        # mean frame
+        self.app.mean_frame = QWidget()
+        self.app.mean_frame.setLayout(self.app.mean_layout)
+
+        # mean title label
+        self.app.mean_label_title = QLabel("Mittelwert:")
+        self.app.mean_label_title.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # mean label
+        self.app.mean_label = QLabel(str(mean))
+        self.app.mean_label.setStyleSheet(
+            "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # add to mean layout
+        self.app.mean_layout.addWidget(self.app.mean_label_title)
+        self.app.mean_layout.addWidget(self.app.mean_label)
+        self.app.mean_layout.addStretch()
+
+        # add content to header
+        self.app.content_header_layout.addWidget(self.app.param_frame, 2)
+        self.app.content_header_layout.addWidget(self.app.min_frame, 2)
+        self.app.content_header_layout.addWidget(self.app.max_frame, 2)
+        self.app.content_header_layout.addWidget(self.app.sigma_frame, 2)
+        self.app.content_header_layout.addWidget(self.app.mean_frame, 2)
 
     def plot_all_data(self):
         idx = "pos. nr."

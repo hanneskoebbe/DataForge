@@ -2,6 +2,7 @@ import sys
 from tkinter import messagebox
 import copy
 from datetime import datetime
+import pandas as pd
 
 
 class Events:
@@ -98,14 +99,8 @@ class Events:
         self.app.data_store.all_data["custom"].df[param_name]["lower tol."].append(-0.015)
         self.app.data_store.all_data["custom"].df[param_name]["upper tol."].append(0.015)
 
-        # generate all_data
-        #self.app.core.gen_all_data()
-        print(self.app.data_store.all_data)
-
         # update gui
         self.app.gui.navigation_bar()
-
-        print(self.app.data_store.all_data)
 
     def on_input(self, p):
         # get temp for parameter
@@ -148,6 +143,17 @@ class Events:
         self.app.gui.canvas.unbind_all("<MouseWheel>")
 
         self.app.gui.root.destroy()
+
+    def on_param_selected(self, p):
+        for data in self.app.data_store.all_data.values():
+            for param in data.df:
+                if param == p:
+                    minimum = pd.Series(data.df[p]["actual"]).min()
+                    maximum = pd.Series(data.df[p]["actual"]).max()
+                    sigma = pd.Series(data.df[p]["actual"]).std()
+                    mean = pd.Series(data.df[p]["actual"]).mean()
+
+        self.app.gui.content_header(p, minimum, maximum, sigma, mean)
 
     def on_options(self, p, widget, pos):
         self.app.gui.option_menu(p, widget, pos)
