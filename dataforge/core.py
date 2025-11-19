@@ -118,26 +118,28 @@ class Core:
                     ][key][i] = self.app.data_store.widget_data[param]["tol_low"].get()
 
     def get_temp(self, p):
-        # check if parameter exists
-        if p not in self.app.data_store.all_data:
-            print(f"Parameter '{p}' nicht in all_data gefunden.")
-            return
-
         # reset temp
         self.app.data_store.temp = {}
 
         # reset temp_arch
         self.app.data_store.temp_arch = {}
 
-        # write directory from all_data to temp for parameter
-        self.app.data_store.temp[p] = copy.deepcopy(
-            self.app.data_store.all_data[p]
-        )
+        # check if parameter exists
+        if not any(p in entry.df for entry in self.app.data_store.all_data.values()):
+            print(f"Parameter '{p}' nicht in all_data gefunden.")
+            return
 
-        # write temp into temp archive to not lose temp while changing it
-        self.app.data_store.temp_arch[p] = copy.deepcopy(
-            self.app.data_store.temp[p]
-        )
+        for entry in self.app.data_store.all_data.values():
+            if p in entry.df:
+                # write directory from all_data to temp for parameter
+                self.app.data_store.temp[p] = copy.deepcopy(
+                    entry.df[p]
+                )
+
+                # write temp into temp archive to not lose temp while changing it
+                self.app.data_store.temp_arch[p] = copy.deepcopy(
+                    entry.df[p]
+                )
 
     def temp_to_data(self):
         param = list(self.app.data_store.temp_arch.keys())[0]

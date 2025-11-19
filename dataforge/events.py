@@ -79,10 +79,11 @@ class Events:
 
     def on_add_par(self):
         # gen custom name for parameter
-        param_name = f'Custom_{datetime.now().strftime("%Y%m%d%H%M%S")}'
+        self.app.data_store.custom_id += 1
+        param_name = f"Custom_{self.app.data_store.custom_id:02d}"
 
         # write empty directory in custom_data
-        self.app.data_store.custom_data[param_name] = {
+        self.app.data_store.all_data["custom"].df[param_name] = {
             "pos. nr.": [],
             "actual": [],
             "nominal": [],
@@ -91,17 +92,20 @@ class Events:
         }
 
         # define default values
-        self.app.data_store.custom_data[param_name]["pos. nr."].append("Pos. xxx-01")
-        self.app.data_store.custom_data[param_name]["actual"].append(0.0)
-        self.app.data_store.custom_data[param_name]["nominal"].append(0.0)
-        self.app.data_store.custom_data[param_name]["lower tol."].append(-0.015)
-        self.app.data_store.custom_data[param_name]["upper tol."].append(0.015)
+        self.app.data_store.all_data["custom"].df[param_name]["pos. nr."].append("Pos. xxx-01")
+        self.app.data_store.all_data["custom"].df[param_name]["actual"].append(0.0)
+        self.app.data_store.all_data["custom"].df[param_name]["nominal"].append(0.0)
+        self.app.data_store.all_data["custom"].df[param_name]["lower tol."].append(-0.015)
+        self.app.data_store.all_data["custom"].df[param_name]["upper tol."].append(0.015)
 
         # generate all_data
-        self.app.core.gen_all_data()
+        #self.app.core.gen_all_data()
+        print(self.app.data_store.all_data)
 
         # update gui
         self.app.gui.navigation_bar()
+
+        print(self.app.data_store.all_data)
 
     def on_input(self, p):
         # get temp for parameter
@@ -153,23 +157,20 @@ class Events:
 
         self.app.data_store.arch[p] = copy.deepcopy(self.app.data_store.temp[p])
 
-        data_sources = [
-            self.app.data_store.import_data,
-            self.app.data_store.custom_data
-        ]
+        print(self.app.data_store.temp)
 
-        for source in data_sources:
-            if p in source:
-                del source[p]
+        for entry in self.app.data_store.all_data.values():
+            if p in entry.df:
+                del entry.df[p]
 
-        self.app.core.gen_all_data()
+        # self.app.core.gen_all_data()
 
         # self.app.gui.widgets()
         self.app.gui.navigation_bar()
 
     def on_duplicate(self, p):
         # new parameter name
-        p_ = f"{p}_copy_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        p_ = f"{p}_copy"
 
         # get temp
         self.app.core.get_temp(p)

@@ -188,47 +188,47 @@ class Gui:
             if item.widget() is not None:
                 item.widget().deleteLater()
 
-        if self.app.data_store.all_data != {}:
-            for param, data in self.app.data_store.all_data.items():
-                # layout for row frame
-                self.app.row_layout = QHBoxLayout()
-                self.app.row_layout.setSpacing(0)
+        if any(entry.df for entry in self.app.data_store.all_data.values()):
+            for data in self.app.data_store.all_data.values():
+                for param in data.df:
+                    # layout for row frame
+                    self.app.row_layout = QHBoxLayout()
+                    self.app.row_layout.setSpacing(0)
 
-                # new row frame for every parameter
-                self.app.row_frame = QWidget()
-                self.app.row_frame.setLayout(self.app.row_layout)
+                    # new row frame for every parameter
+                    self.app.row_frame = QWidget()
+                    self.app.row_frame.setLayout(self.app.row_layout)
 
-                # bind context menu on right click
-                self.app.row_frame.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-                self.app.row_frame.customContextMenuRequested.connect(
-                    lambda pos, p=param, frame=self.app.row_frame:
-                        self.app.events.on_options(p, frame, pos)
-                )
+                    # bind context menu on right click
+                    self.app.row_frame.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                    self.app.row_frame.customContextMenuRequested.connect(
+                        lambda pos, p=param, frame=self.app.row_frame:
+                            self.app.events.on_options(p, frame, pos)
+                    )
 
-                # label for param
-                self.app.param_label = QLabel(param)
-                self.app.param_label.setStyleSheet(
-                    "color: #333333;\
-                    font-weight: bold;\
-                    font-size: 14px;"
-                )
+                    # label for param
+                    self.app.param_label = QLabel(param)
+                    self.app.param_label.setStyleSheet(
+                        "color: #333333;\
+                        font-weight: bold;\
+                        font-size: 14px;"
+                    )
 
-                # delete button
-                self.app.del_btn = QPushButton()
-                self.app.del_btn.setStyleSheet("background: #FFFFFF")
-                self.app.del_btn.setFixedSize(20, 20)
-                self.app.del_btn.clicked.connect(
-                    lambda checked=False, p=param: self.app.events.on_del(p)
-                )
+                    # delete button
+                    self.app.del_btn = QPushButton()
+                    self.app.del_btn.setStyleSheet("background: #FFFFFF")
+                    self.app.del_btn.setFixedSize(20, 20)
+                    self.app.del_btn.clicked.connect(
+                        lambda checked=False, p=param: self.app.events.on_del(p)
+                    )
 
-                # add content to row layout
-                self.app.row_layout.addWidget(self.app.param_label)
-                self.app.row_layout.addStretch()
-                self.app.row_layout.addWidget(self.app.option_btn)
-                self.app.row_layout.addWidget(self.app.del_btn)
+                    # add content to row layout
+                    self.app.row_layout.addWidget(self.app.param_label)
+                    self.app.row_layout.addStretch()
+                    self.app.row_layout.addWidget(self.app.del_btn)
 
-                # add row frame to navigation bar
-                self.app.navigation_layout.addWidget(self.app.row_frame)
+                    # add row frame to navigation bar
+                    self.app.navigation_layout.addWidget(self.app.row_frame)
 
         # add parameter button
         self.app.add_btn = QPushButton("+")
@@ -628,7 +628,7 @@ class Gui:
             if i == 0:
                 dat_entry.insert(
                     0,
-                    f"Pos. xxx-0{self.app.gui.i_edit+1}" if self.app.gui.i_edit+1 <= 9 else f"Pos. xxx-{self.app.gui.i_edit+1}"
+                    f"Pos. xxx-{self.app.gui.i_edit+1:02d}"
                 )
             elif i == 1:
                 dat_entry.insert(0, "0.0")
