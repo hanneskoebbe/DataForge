@@ -26,6 +26,30 @@ class Gui:
         self.i_edit = 0
         self.dat_entries = []  # Liste, um die Daten-Eingabefelder zu speichern
 
+        # ===formatting===
+        # self.main_bg
+        # self.header_bg
+        # self.nav_bg
+        self.btn_frm = "background: #FDFDFD;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+
+        self.header_labels_frm = "background: #EEEEEE;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+
+        self.labels_frm = "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+
+        self.entrys = "background: #FFFFFF;\
+            color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+
     def widgets(self):
         # delete checkboxes
         for self.app.widget in self.app.scrollable_frame.winfo_children():
@@ -222,15 +246,11 @@ class Gui:
 
                     # label for param
                     self.app.param_label = QLabel(param)
-                    self.app.param_label.setStyleSheet(
-                        "color: #333333;\
-                        font-weight: bold;\
-                        font-size: 14px;"
-                    )
+                    self.app.param_label.setStyleSheet(self.app.gui.header_labels_frm)
 
                     # delete button
-                    self.app.del_btn = QPushButton()
-                    self.app.del_btn.setStyleSheet("background: #FFFFFF")
+                    self.app.del_btn = QPushButton("X")
+                    self.app.del_btn.setStyleSheet(self.app.gui.btn_frm)
                     self.app.del_btn.setFixedSize(20, 20)
                     self.app.del_btn.clicked.connect(
                         lambda checked=False, p=param: self.app.events.on_del(p)
@@ -247,7 +267,7 @@ class Gui:
         # add parameter button
         self.app.add_btn = QPushButton("+")
         self.app.add_btn.setFixedSize(20, 20)
-        self.app.add_btn.setStyleSheet("background: #FFFFFF")
+        self.app.add_btn.setStyleSheet(self.app.gui.btn_frm)
         self.app.add_btn.clicked.connect(self.app.events.on_add_par)
 
         # add add_btn to navigation bar
@@ -255,6 +275,7 @@ class Gui:
         self.app.navigation_layout.addStretch()
 
     def content_header(self, p):
+        # ====header===
         for data in self.app.data_store.all_data.values():
             for param in data.df:
                 if param == p:
@@ -277,21 +298,11 @@ class Gui:
 
         # param title label
         self.app.content_param_label_title = QLabel("Parameter:")
-        self.app.content_param_label_title.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.content_param_label_title.setStyleSheet(self.app.gui.header_labels_frm)
 
         # param label
         self.app.content_param_label = QLabel(p)
-        self.app.content_param_label.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.content_param_label.setStyleSheet(self.app.gui.labels_frm)
 
         # add to param layout
         self.app.param_layout.addWidget(self.app.content_param_label_title)
@@ -307,21 +318,11 @@ class Gui:
 
         # min title label
         self.app.min_label_title = QLabel("Min:")
-        self.app.min_label_title.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.min_label_title.setStyleSheet(self.app.gui.header_labels_frm)
 
         # min label
         self.app.min_label = QLabel(str(minimum))
-        self.app.min_label.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.min_label.setStyleSheet(self.app.gui.labels_frm)
 
         # add to min layout
         self.app.min_layout.addWidget(self.app.min_label_title)
@@ -337,21 +338,11 @@ class Gui:
 
         # max title label
         self.app.max_label_title = QLabel("Max:")
-        self.app.max_label_title.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.max_label_title.setStyleSheet(self.app.gui.header_labels_frm)
 
         # max label
         self.app.max_label = QLabel(str(maximum))
-        self.app.max_label.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.max_label.setStyleSheet(self.app.gui.labels_frm)
 
         # add to max layout
         self.app.max_layout.addWidget(self.app.max_label_title)
@@ -367,21 +358,11 @@ class Gui:
 
         # sigma title label
         self.app.sigma_label_title = QLabel("Sigma:")
-        self.app.sigma_label_title.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.sigma_label_title.setStyleSheet(self.app.gui.header_labels_frm)
 
         # sigma label
         self.app.sigma_label = QLabel(str(sigma))
-        self.app.sigma_label.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.sigma_label.setStyleSheet(self.app.gui.labels_frm)
 
         # add to sigma layout
         self.app.sigma_layout.addWidget(self.app.sigma_label_title)
@@ -397,21 +378,11 @@ class Gui:
 
         # mean title label
         self.app.mean_label_title = QLabel("Mean:")
-        self.app.mean_label_title.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.mean_label_title.setStyleSheet(self.app.gui.header_labels_frm)
 
         # mean label
         self.app.mean_label = QLabel(str(mean))
-        self.app.mean_label.setStyleSheet(
-            "background: #FFFFFF;\
-            color: #000000;\
-            font-weight: bold;\
-            font-size: 14px;"
-        )
+        self.app.mean_label.setStyleSheet(self.app.gui.labels_frm)
 
         # add to mean layout
         self.app.mean_layout.addWidget(self.app.mean_label_title)
@@ -425,7 +396,8 @@ class Gui:
         self.app.content_header_layout.addWidget(self.app.sigma_frame, 2)
         self.app.content_header_layout.addWidget(self.app.mean_frame, 2)
 
-    def plot_df(self, p):
+    def content_plot_df(self, p):
+        # ====plot===
         while self.app.content_plot_layout.count():
             item = self.app.content_plot_layout.takeAt(0)
             if item.widget() is not None:
@@ -498,6 +470,149 @@ class Gui:
                 self.app.events.on_edit_data(p_)
                 if e.button() == Qt.MouseButton.LeftButton else None
         )
+
+    def edit_page(self, p):
+        while self.app.page_edit_layout.count():
+            item = self.app.page_edit_layout.takeAt(0)
+            if item.widget() is not None:
+                item.widget().deleteLater()
+
+        # header frame for title
+        self.app.edit_header_frame = QWidget()
+        self.app.edit_header_layout = QHBoxLayout(self.app.edit_header_frame)
+        self.app.edit_header_frame.setStyleSheet(
+            "color: #000000;\
+            font-weight: bold;\
+            font-size: 14px;"
+        )
+
+        # labels for header
+        self.app.edit_id_label = QLabel("ID")
+        self.app.edit_id_label.setStyleSheet(self.app.gui.header_labels_frm)
+
+        self.app.edit_actual_label = QLabel("actual")
+        self.app.edit_actual_label.setStyleSheet(self.app.gui.header_labels_frm)
+
+        self.app.edit_nominal_label = QLabel("nominal")
+        self.app.edit_nominal_label.setStyleSheet(self.app.gui.header_labels_frm)
+
+        self.app.edit_low_tol_label = QLabel("lower tol.")
+        self.app.edit_low_tol_label.setStyleSheet(self.app.gui.header_labels_frm)
+
+        self.app.edit_upper_tol_label = QLabel("upper tol.")
+        self.app.edit_upper_tol_label.setStyleSheet(self.app.gui.header_labels_frm)
+
+        # add content to header layout
+        self.app.edit_header_layout.addWidget(self.app.edit_id_label, 2)
+        self.app.edit_header_layout.addWidget(self.app.edit_actual_label, 2)
+        self.app.edit_header_layout.addWidget(self.app.edit_nominal_label, 2)
+        self.app.edit_header_layout.addWidget(self.app.edit_low_tol_label, 2)
+        self.app.edit_header_layout.addWidget(self.app.edit_upper_tol_label, 2)
+
+        # data frame
+        self.app.edit_data_frame = QWidget()
+        self.app.edit_data_layout = QVBoxLayout(self.app.edit_data_frame)
+
+        # data table
+        self.app.edit_data_table = QWidget()
+        self.app.edit_data_table_layout = QGridLayout(self.app.edit_data_table)
+
+        self.app.edit_data_scroll = QScrollArea()
+        self.app.edit_data_scroll.setWidgetResizable(True)
+        self.app.edit_data_scroll.setWidget(self.app.edit_data_frame)
+
+        # add content to data layout
+        self.app.edit_data_layout.addWidget(self.app.edit_data_table)
+        self.app.edit_data_layout.addStretch()
+
+        # footer frame for buttons
+        self.app.edit_footer_frame = QWidget()
+        self.app.edit_footer_layout = QHBoxLayout(self.app.edit_footer_frame)
+
+        self.app.add_btn = QPushButton("add")
+        self.app.add_btn.setStyleSheet(self.app.gui.btn_frm)
+        self.app.add_btn.clicked.connect(lambda: self.app.events.on_edit_add(p))
+
+        self.app.del_btn = QPushButton("del")
+        self.app.del_btn.setStyleSheet(self.app.gui.btn_frm)
+        self.app.del_btn.clicked.connect(lambda: self.app.events.on_edit_del(p))
+
+        self.app.confirm_btn = QPushButton("confirm")
+        self.app.confirm_btn.setStyleSheet(self.app.gui.btn_frm)
+        self.app.confirm_btn.clicked.connect(lambda: self.app.events.on_edit_confirm(p))
+
+        self.app.edit_footer_layout.addWidget(self.app.add_btn, 1)
+        self.app.edit_footer_layout.addWidget(self.app.del_btn, 1)
+        self.app.edit_footer_layout.addStretch(10)
+        self.app.edit_footer_layout.addWidget(self.app.confirm_btn, 1)
+
+        # add content to page edit layout
+        self.app.page_edit_layout.addWidget(self.app.edit_header_frame, 1)
+        self.app.page_edit_layout.addWidget(self.app.edit_data_scroll, 8)
+        self.app.page_edit_layout.addWidget(self.app.edit_footer_frame, 1)
+
+        self.app.gui.gen_data_table(p)
+
+    def gen_data_table(self, p):
+        self.dat_entries = []
+        self.app.gui.i_edit = 0
+
+        # empty data table
+        while self.app.edit_data_table_layout.count():
+            item = self.app.edit_data_table_layout.takeAt(0)
+            if item.widget() is not None:
+                item.widget().deleteLater()
+
+        # add entrys for records in temp
+        num_rows = len(self.app.data_store.temp[p]["actual"])
+
+        for i in range(num_rows):
+            self.app.gui.add_edit_entry()
+
+        for i, row_entries in enumerate(self.app.gui.dat_entries):
+            row_data = [
+                self.app.data_store.temp[p]["pos. nr."][i],
+                self.app.data_store.temp[p]["actual"][i],
+                self.app.data_store.temp[p]["nominal"][i],
+                self.app.data_store.temp[p]["lower tol."][i],
+                self.app.data_store.temp[p]["upper tol."][i]
+            ]
+
+            for j, entry in enumerate(row_entries):
+                entry.clear()
+                entry.setText(str(row_data[j]))
+
+    def add_edit_entry(self):
+        row_entries = []
+
+        for i in range(5):
+            self.app.dat_entry = QLineEdit()
+            self.app.dat_entry.setStyleSheet(self.app.gui.entrys)
+            # add content
+            self.app.edit_data_table_layout.addWidget(
+                self.app.dat_entry,
+                self.app.gui.i_edit + 1,
+                i
+            )
+
+            self.app.dat_entry.textChanged.connect(
+                lambda _,
+                    entry = self.app.dat_entry,
+                    row = self.app.gui.i_edit,
+                    col = i: self.app.events.on_data_changed(entry, row, col)
+            )
+
+            row_entries.append(self.app.dat_entry)
+
+        self.app.gui.dat_entries.append(row_entries)
+        self.app.gui.i_edit += 1
+
+    def del_edit_entry(self):
+        if self.app.gui.dat_entries:
+            last_row = self.app.gui.dat_entries.pop()
+            for entry in last_row:
+                entry.destroy()
+            self.app.gui.i_edit -= 1
 
     def select_dir(self):
         # dialog to choose directory
@@ -820,142 +935,3 @@ class Gui:
                 entry.insert(0, row_data[j])
 
         self.app.gui.root.mainloop()
-
-    def edit_window_2(self, p):
-        while self.app.page_edit_layout.count():
-            item = self.app.page_edit_layout.takeAt(0)
-            if item.widget() is not None:
-                item.widget().deleteLater()
-
-        # header frame for title
-        self.app.edit_header_frame = QWidget()
-        self.app.edit_header_layout = QHBoxLayout(self.app.edit_header_frame)
-
-        # labels for header
-        self.app.edit_id_label = QLabel("ID")
-        self.app.edit_actual_label = QLabel("actual")
-        self.app.edit_nominal_label = QLabel("nominal")
-        self.app.edit_low_tol_label = QLabel("lower tol.")
-        self.app.edit_upper_tol_label = QLabel("upper tol.")
-
-        # add content to header layout
-        self.app.edit_header_layout.addWidget(self.app.edit_id_label, 2)
-        self.app.edit_header_layout.addWidget(self.app.edit_actual_label, 2)
-        self.app.edit_header_layout.addWidget(self.app.edit_nominal_label, 2)
-        self.app.edit_header_layout.addWidget(self.app.edit_low_tol_label, 2)
-        self.app.edit_header_layout.addWidget(self.app.edit_upper_tol_label, 2)
-
-        # data frame
-        self.app.edit_data_frame = QWidget()
-        self.app.edit_data_layout = QVBoxLayout(self.app.edit_data_frame)
-        
-        # data table
-        self.app.edit_data_table = QWidget()
-        self.app.edit_data_table_layout = QGridLayout(self.app.edit_data_table)
-
-        self.app.edit_data_scroll = QScrollArea()
-        self.app.edit_data_scroll.setWidgetResizable(True)
-        self.app.edit_data_scroll.setWidget(self.app.edit_data_frame)
-
-        # add content to data layout
-        self.app.edit_data_layout.addWidget(self.app.edit_data_table)
-        self.app.edit_data_layout.addStretch()
-
-        # footer frame for buttons
-        self.app.edit_footer_frame = QWidget()
-        self.app.edit_footer_layout = QHBoxLayout(self.app.edit_footer_frame)
-
-        self.app.add_btn = QPushButton("add")
-        self.app.add_btn.setStyleSheet("background: #FFFFFF")
-        self.app.add_btn.clicked.connect(lambda: self.app.events.on_edit_add(p))
-
-        self.app.del_btn = QPushButton("del")
-        self.app.del_btn.setStyleSheet("background: #FFFFFF")
-        self.app.del_btn.clicked.connect(lambda: self.app.events.on_edit_del(p))
-
-        self.app.confirm_btn = QPushButton("confirm")
-        self.app.confirm_btn.setStyleSheet("background: #FFFFFF")
-        self.app.confirm_btn.clicked.connect(lambda: self.app.events.on_edit_confirm(p))
-
-        self.app.edit_footer_layout.addWidget(self.app.add_btn, 1)
-        self.app.edit_footer_layout.addWidget(self.app.del_btn, 1)
-        self.app.edit_footer_layout.addStretch(10)
-        self.app.edit_footer_layout.addWidget(self.app.confirm_btn, 1)
-
-        #add content to page edit layout
-        self.app.page_edit_layout.addWidget(self.app.edit_header_frame, 1)
-        self.app.page_edit_layout.addWidget(self.app.edit_data_scroll, 8)
-        self.app.page_edit_layout.addWidget(self.app.edit_footer_frame, 1)
-
-        self.app.gui.gen_data_table(p)
-
-    def gen_data_table(self, p):
-        self.dat_entries = []
-        self.app.gui.i_edit = 0
-        
-        # empty data table
-        while self.app.edit_data_table_layout.count():
-            item = self.app.edit_data_table_layout.takeAt(0)
-            if item.widget() is not None:
-                item.widget().deleteLater()
-
-        # add entrys for records in temp
-        num_rows = len(self.app.data_store.temp[p]["actual"])
-
-        for i in range(num_rows):
-            self.app.gui.add_edit_entry()
-
-        for i, row_entries in enumerate(self.app.gui.dat_entries):
-            row_data = [
-                self.app.data_store.temp[p]["pos. nr."][i],
-                self.app.data_store.temp[p]["actual"][i],
-                self.app.data_store.temp[p]["nominal"][i],
-                self.app.data_store.temp[p]["lower tol."][i],
-                self.app.data_store.temp[p]["upper tol."][i]
-            ]
-
-            for j, entry in enumerate(row_entries):
-                entry.clear()
-                entry.setText(str(row_data[j]))
-
-    def add_edit_entry(self):
-        row_entries = []
-
-        for i in range(5):
-            dat_entry = QLineEdit()
-            # if i == 0:
-            #     dat_entry.setText(f"Pos. xxx-{self.app.gui.i_edit+1:02d}")
-            # elif i == 1:
-            #     dat_entry.setText("0.0")
-            # elif i == 2:
-            #     dat_entry.setText("0.0")
-            # elif i == 3:
-            #     dat_entry.setText("0.015")
-            # elif i == 4:
-            #     dat_entry.setText("-0.015")
-
-            # add content
-            self.app.edit_data_table_layout.addWidget(
-                dat_entry,
-                self.app.gui.i_edit + 1,
-                i
-            )
-
-            dat_entry.textChanged.connect(
-                lambda _,
-                    entry = dat_entry,
-                    row = self.app.gui.i_edit,
-                    col = i: self.app.events.on_data_changed(entry, row, col)
-            )
-
-            row_entries.append(dat_entry)
-
-        self.app.gui.dat_entries.append(row_entries)
-        self.app.gui.i_edit += 1
-
-    def del_edit_entry(self):
-        if self.app.gui.dat_entries:
-            last_row = self.app.gui.dat_entries.pop()
-            for entry in last_row:
-                entry.destroy()
-            self.app.gui.i_edit -= 1

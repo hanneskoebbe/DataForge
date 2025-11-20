@@ -129,7 +129,7 @@ class Events:
 
         self.app.core.get_temp(p)
 
-        self.app.gui.edit_window_2(p)
+        self.app.gui.edit_page(p)
 
 #neu
     def on_data_changed(self, entry, row, col):
@@ -180,13 +180,13 @@ class Events:
 
         self.app.gui.content_header(p)
 
-        self.app.gui.plot_df(p)
+        self.app.gui.content_plot_df(p)
 
 #neu
     def on_df_selected(self, p):
         self.app.gui.content_header(p)
 
-        self.app.gui.plot_df(p)
+        self.app.gui.content_plot_df(p)
 
     def on_options(self, p, widget, pos):
         self.app.gui.option_menu(p, widget, pos)

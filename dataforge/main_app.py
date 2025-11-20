@@ -194,7 +194,12 @@ class MainApp(QMainWindow):
         # add parameter button
         self.add_btn = QPushButton("+")
         self.add_btn.setFixedSize(20, 20)
-        self.add_btn.setStyleSheet("background: #FFFFFF")
+        self.add_btn.setStyleSheet(
+                "background: #FFFFFF;\
+                color: #000000;\
+                font-weight: bold;\
+                font-size: 14px;"
+            )
         self.add_btn.clicked.connect(self.events.on_add_par)
 
         # add add_btn to navigation bar
@@ -240,7 +245,7 @@ class MainApp(QMainWindow):
         self.page_main_layout.addWidget(self.content_frame, 9)
 
         self.page_edit = QWidget()
-        self.page_edit.setStyleSheet("background: #FFFFFF;")
+        self.page_edit.setStyleSheet("background: #EEEEEE;")
         self.page_edit_layout = QVBoxLayout(self.page_edit)
         self.page_edit_layout.setContentsMargins(0, 0, 0, 0)
 
