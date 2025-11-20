@@ -11,6 +11,7 @@ class Core:
     def __init__(self, app):
         self.app = app
         self.tolerance = ["lower tol.", "upper tol."]
+        self.keys = ["pos. nr.", "actual", "nominal", "lower tol.", "upper tol."]
 
     def gen_raw_excel_data(self, dir):
         data = {}
@@ -219,6 +220,37 @@ class Core:
                         new.append(value)
                     source[param][key] = new
                 break  # break when parameter is found
+
+# neu
+    def temp_add_record(self, p):
+        for key in self.app.core.keys:
+            if key == "pos. nr.":
+                self.app.data_store.temp[p][key].append(f"Pos. xxx-{self.app.gui.i_edit+1:02d}")
+            elif key == "actual":
+                self.app.data_store.temp[p][key].append("0.0")
+            elif key == "nominal":
+                self.app.data_store.temp[p][key].append("0.0")
+            elif key == "lower tol.":
+                self.app.data_store.temp[p][key].append("-0.015")
+            elif key == "upper tol.":
+                self.app.data_store.temp[p][key].append("0.015")
+
+# neu
+    def temp_del_record(self, p):
+        for key in self.app.core.keys:
+            print(key)
+            del self.app.data_store.temp[p][key][self.app.gui.i_edit]
+
+# neu
+    def temp_to_all_data(self, entry, row, col):
+        param = list(self.app.data_store.temp.keys())[0]
+        
+        self.app.data_store.temp[param][self.app.core.keys[col]][row] = self.app.core.convert_seperator(entry.text())
+
+        for data in self.app.data_store.all_data.values():
+            for p in data.df:
+                if p == param:
+                    data.df[p] = self.app.data_store.temp[p]
 
     def gen_mean_data(self, p, selected):
         self.app.data_store.mean_data = {}

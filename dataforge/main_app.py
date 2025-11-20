@@ -1,5 +1,5 @@
 import tkinter as tk
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QScrollArea
+from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QScrollArea, QStackedWidget
 from PyQt6.QtGui import QIcon, QRegion, QPixmap
 from PyQt6.QtCore import Qt, QSize, QRect
 from tkinter import ttk
@@ -17,6 +17,7 @@ class MainApp(QMainWindow):
         self.data_store = DataStore()
         self.core = Core(self)
         self.run2()
+        self.workspace_stack.setCurrentIndex(0)
 
     def run(self):
         self.root = tk.Tk()
@@ -165,13 +166,14 @@ class MainApp(QMainWindow):
         self.menu_layout.addWidget(self.start_btn)
         self.menu_layout.addStretch()
 
-        # workspace layout -> hotzontal
-        self.workspace_layout = QHBoxLayout()
+        # workspace -> stacked widget (main page, edit page, ...)
+        self.workspace_stack = QStackedWidget()
 
         # frame for workspace
-        self.workspace_frame = QWidget()
-        self.workspace_frame.setStyleSheet("background: #FFFFFF;")
-        self.workspace_frame.setLayout(self.workspace_layout)
+        self.page_main = QWidget()
+        self.page_main.setStyleSheet("background: #FFFFFF;")
+        self.page_main_layout = QHBoxLayout(self.page_main)
+        self.page_main_layout.setContentsMargins(0, 0, 0, 0)
 
         # navigation layout -> vertical
         self.navigation_layout = QVBoxLayout()
@@ -216,20 +218,38 @@ class MainApp(QMainWindow):
         self.content_header_frame.setLayout(self.content_header_layout)
         self.content_header_frame.setStyleSheet("background: #FFFFFF")
 
+        # layout for content plot
+        self.content_plot_layout = QHBoxLayout()
+
         # frame for content plot
         self.content_plot_frame = QWidget()
+        self.content_plot_frame.setLayout(self.content_plot_layout)
         self.content_plot_frame.setStyleSheet("background: #000000")
 
+        # scrollable plot frame
+        self.plot_scroll = QScrollArea()
+        self.plot_scroll.setWidgetResizable(True)
+        self.plot_scroll.setWidget(self.content_plot_frame)
+
         # add content to layout
-        self.content_layout.addWidget(self.content_header_frame, 2)
-        self.content_layout.addWidget(self.content_plot_frame, 8)
+        self.content_layout.addWidget(self.content_header_frame, 1)
+        self.content_layout.addWidget(self.plot_scroll, 9)
+
+        # add content to main page layout
+        self.page_main_layout.addWidget(self.nav_scroll, 1)
+        self.page_main_layout.addWidget(self.content_frame, 9)
+
+        self.page_edit = QWidget()
+        self.page_edit.setStyleSheet("background: #FFFFFF;")
+        self.page_edit_layout = QVBoxLayout(self.page_edit)
+        self.page_edit_layout.setContentsMargins(0, 0, 0, 0)
 
         # add content to workspace
-        self.workspace_layout.addWidget(self.nav_scroll, 1)
-        self.workspace_layout.addWidget(self.content_frame, 9)
+        self.workspace_stack.addWidget(self.page_main)
+        self.workspace_stack.addWidget(self.page_edit)
 
         # add content to main_frame
         self.main_frame.addWidget(self.menu_frame)
-        self.main_frame.addWidget(self.workspace_frame)
+        self.main_frame.addWidget(self.workspace_stack)
 
         self.showMaximized()

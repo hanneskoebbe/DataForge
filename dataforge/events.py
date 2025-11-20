@@ -123,6 +123,18 @@ class Events:
 
         self.app.gui.edit_window(p)
 
+#neu
+    def on_edit_data(self, p):
+        self.app.workspace_stack.setCurrentIndex(1)
+
+        self.app.core.get_temp(p)
+
+        self.app.gui.edit_window_2(p)
+
+#neu
+    def on_data_changed(self, entry, row, col):
+        self.app.core.temp_to_all_data(entry, row, col)
+
     def on_edit_add(self):
         self.app.gui.add_edit_entry()
 
@@ -144,16 +156,37 @@ class Events:
 
         self.app.gui.root.destroy()
 
-    def on_param_selected(self, p):
-        for data in self.app.data_store.all_data.values():
-            for param in data.df:
-                if param == p:
-                    minimum = pd.Series(data.df[p]["actual"]).min()
-                    maximum = pd.Series(data.df[p]["actual"]).max()
-                    sigma = pd.Series(data.df[p]["actual"]).std()
-                    mean = pd.Series(data.df[p]["actual"]).mean()
+#neu
+    def on_edit_add(self, p):
+        # add record in temp
+        self.app.core.temp_add_record(p)
 
-        self.app.gui.content_header(p, minimum, maximum, sigma, mean)
+        # update data table
+        self.app.gui.gen_data_table(p)
+
+#neu
+    def on_edit_del(self,p):
+        self.app.gui.i_edit =-1
+
+        # del record in temp
+        self.app.core.temp_del_record(p)
+
+        # update data table
+        self.app.gui.gen_data_table(p)
+
+#neu
+    def on_edit_confirm(self, p):
+        self.app.workspace_stack.setCurrentIndex(0)
+
+        self.app.gui.content_header(p)
+
+        self.app.gui.plot_df(p)
+
+#neu
+    def on_df_selected(self, p):
+        self.app.gui.content_header(p)
+
+        self.app.gui.plot_df(p)
 
     def on_options(self, p, widget, pos):
         self.app.gui.option_menu(p, widget, pos)
