@@ -1,12 +1,12 @@
 import tkinter as tk
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QScrollArea, QStackedWidget
+from PyQt6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QPushButton, QScrollArea, QStackedWidget, QMenu, QStyle
 from PyQt6.QtGui import QIcon, QRegion, QPixmap
 from PyQt6.QtCore import Qt, QSize, QRect
 from tkinter import ttk
 from dataforge.gui import Gui
 from dataforge.events import Events
 from dataforge.core import Core
-from dataforge.data_store import DataStore
+from dataforge.data_store import DataStore, DataEntry
 
 
 class MainApp(QMainWindow):
@@ -17,7 +17,7 @@ class MainApp(QMainWindow):
         self.data_store = DataStore()
         self.core = Core(self)
         self.run2()
-        self.workspace_stack.setCurrentIndex(0)
+        self.workspace_stack.setCurrentIndex(2)
 
     def run(self):
         self.root = tk.Tk()
@@ -158,18 +158,42 @@ class MainApp(QMainWindow):
             }
         """)
 
-        def start_button_clicked():
-            print("start test 123")
+        # start button menu
+        self.start_menu = QMenu(self.start_btn)
 
-        self.start_btn.clicked.connect(start_button_clicked)
+        # options for start menu
+        self.start_open = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton),
+            "Open..."
+        )
+        self.start_new = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon),
+            "New project"
+        )
+        self.start_save = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton),
+            "Save"
+        )
+
+        # actions for start menu
+        self.start_open.triggered.connect(self.events.on_start_open)
+        self.start_new.triggered.connect(self.events.on_start_new)
+        self.start_save.triggered.connect(self.events.on_start_save)
+
+        #
+        self.start_btn.clicked.connect(
+            lambda: self.start_menu.exec(
+                self.start_btn.mapToGlobal(self.start_btn.rect().bottomLeft())
+            )
+        )
 
         self.menu_layout.addWidget(self.start_btn)
         self.menu_layout.addStretch()
 
-        # workspace -> stacked widget (main page, edit page, ...)
+        # workspace -> stacked widget (main page, edit page, ..., empty start page)
         self.workspace_stack = QStackedWidget()
 
-        # frame for workspace
+        # main page
         self.page_main = QWidget()
         self.page_main.setStyleSheet("background: #FFFFFF;")
         self.page_main_layout = QHBoxLayout(self.page_main)
@@ -212,7 +236,7 @@ class MainApp(QMainWindow):
 
         # frame for content
         self.content_frame = QWidget()
-        self.content_frame.setStyleSheet("background: #EEEEEE")
+        self.content_frame.setStyleSheet("background: #FDFDFD")
         self.content_frame.setLayout(self.content_layout)
 
         # layout for content header -> horizontal
@@ -244,14 +268,20 @@ class MainApp(QMainWindow):
         self.page_main_layout.addWidget(self.nav_scroll, 1)
         self.page_main_layout.addWidget(self.content_frame, 9)
 
+        # edit page
         self.page_edit = QWidget()
         self.page_edit.setStyleSheet("background: #EEEEEE;")
         self.page_edit_layout = QVBoxLayout(self.page_edit)
         self.page_edit_layout.setContentsMargins(0, 0, 0, 0)
 
+        # start page -> empty (shown when app is started and no project is opend)
+        self.page_start = QWidget()
+        self.page_start.setStyleSheet("background: #EEEEEE;")
+
         # add content to workspace
         self.workspace_stack.addWidget(self.page_main)
         self.workspace_stack.addWidget(self.page_edit)
+        self.workspace_stack.addWidget(self.page_start)
 
         # add content to main_frame
         self.main_frame.addWidget(self.menu_frame)

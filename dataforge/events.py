@@ -2,6 +2,7 @@ import sys
 from tkinter import messagebox
 import copy
 from datetime import datetime
+from dataforge.data_store import DataEntry
 import pandas as pd
 
 
@@ -20,6 +21,27 @@ class Events:
             canvas.yview_scroll(-1, "units")
         elif event.num == 5:
             canvas.yview_scroll(1, "units")
+
+    def on_start_new(self):
+
+        # init all_data
+        self.app.data_store.all_data["_init_"] = DataEntry(
+            source = "_init_"
+        )
+        self.app.data_store.all_data["custom"] = DataEntry(
+            source = "custom"
+        )
+
+        self.app.workspace_stack.setCurrentIndex(0)
+        print(self.app.data_store.all_data)
+
+    def on_start_open(self):
+        self.app.workspace_stack.setCurrentIndex(0)
+        print("Opend...")
+
+    def on_start_save(self):
+        self.app.workspace_stack.setCurrentIndex(2)
+        print("Saved")
 
     def on_import(self):
         # dialog to choose directory
