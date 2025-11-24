@@ -17,13 +17,12 @@ class Core:
         self.tolerance = ["lower tol.", "upper tol."]
         self.keys = ["pos. nr.", "actual", "nominal", "lower tol.", "upper tol."]
 
-    def init_data(self, name, dir):      
+    def init_data(self, name, src, dir, crtd, data):      
         self.app.data_store.all_data[name] = DataEntry(
-            source="_init_",
-            directory=dir
-        )
-        self.app.data_store.all_data["custom"] = DataEntry(
-            source="custom"
+            source=src,
+            directory=dir,
+            created=crtd,
+            df=data
         )
 
     def f_save(self, name, dir):
@@ -54,76 +53,71 @@ class Core:
 
                 self.app.core.file_saved = True
 
-        print(self.app.data_store.all_data)
-
     def f_open(self, name, dir):
         # Construct the full file path
         file_path = os.path.join(dir)
 
         if name.endswith(".txt"):
             with open(file_path, 'r') as f:
-                data = {}
+                df = {}
+                row = None
                 key = None
-                entry = None
                 df_key = None
                 df_entry = None
                 row_key = None
-                row = None
 
                 for line in f:
                     line = line.strip()
                     if line.startswith("Key:"):
-                        if key and entry:
-                            data[key] = entry  # Store the previous entry before starting a new one
+                        if key:
+                            self.app.core.init_data(key, src, dir, crtd, df[key]) # Store before starting a new one
                         key = line.split(":")[1].strip()  # Extract key
-                        entry = {}
+                        df[key]={}
                     elif line.startswith("Source:"):
-                        entry['source'] = line.split("Source:")[1].strip()
+                        src = line.split("Source:")[1].strip()
                     elif line.startswith("Directory:"):
-                        entry['directory'] = line.split("Directory:")[1].strip()
+                        dir_val = line.split("Directory:")[1].strip()
+                        dir = None if dir_val == "None" else dir_val
                     elif line.startswith("Created:"):
-                        entry['created'] = line.split(":")[1].strip()
-                    elif line.startswith("DF:"):
-                        df_str = line.split("DF:")[1].strip()  # Extract the JSON part for df
-                        entry['df'] = json.loads(df_str) if df_str else {}
+                        crtd_val = line.split("Created:")[1].strip()
+                        crtd = None if crtd_val == "None" else crtd_val
                     else:
                         if line.endswith(": {"):
                             if df_key and df_entry:
-                                df[key][df_key] = df_entry # Store the previous entry before starting a new one
-                            df_key = line.split(":")[0].strip() # Extract key
+                                df[key][df_key] = df_entry # Store the previous df_entry before starting a new one
+                                if row_key and row:
+                                    df_entry[row_key] = row
+                                    row = None
+                            df_key = json.loads(line.split(":")[0].strip()) # Extract key
+                            df[key][df_key] = {}
                             df_entry = {}
                         elif line.endswith(": ["):
                             if row_key and row:
-                                df_entry[row_key] = 
-                            row_key = line.split(":")[0].strip()  # Extract key
+                                df_entry[row_key] = row
+                            row_key = json.loads(line.split(":")[0].strip())  # Extract key
                             row = []
-                            i_row = 0
-                        elif not line.startswith("]"):
-                            row[i_row] = line
-                            i_row += 1
-                if key and entry:  # Store the last entry
-                    data[key] = entry
-                print(data)
+                        elif not line.startswith("]") and not line.startswith("DF:") and not line.startswith("{") and not line.startswith("}"):
+                            row.append(json.loads(line.strip().rstrip(",")))
+                if df_key and df_entry: # Store the last df_entry
+                    df_entry[row_key] = row
+                    df[key][df_key] = df_entry
+                if key:  # Store the last one
+                    self.app.core.init_data(key, src, dir, crtd, df[key])
         elif name.endswith(".csv"):
             with open(file_path, 'r') as f:
+                key = None
                 reader = csv.reader(f)
                 headers = next(reader)  # Skip header row
-
-                data = {}
+                df = {}
                 for row in reader:
-                    key, source, directory, created, df_json = row
+                    if key:
+                        self.app.core.init_data(key, src, dir, crtd, df)
+                    key, src, directory, created, df_json = row
+                    dir = directory or None
+                    crtd = created or None
                     df = json.loads(df_json) if df_json else {}  # Deserialize the DataFrame (JSON)
-
-                    entry = {
-                        'source': source,
-                        'directory': directory,
-                        'created': created,
-                        'df': df
-                    }
-
-                    data[key] = entry
-
-                print(data)
+                if key:
+                    self.app.core.init_data(key, src, dir, crtd, df)
 
     def gen_raw_excel_data(self, dir):
         data = {}
@@ -350,19 +344,24 @@ class Core:
 # neu
     def temp_del_record(self, p):
         for key in self.app.core.keys:
-            print(key)
             del self.app.data_store.temp[p][key][self.app.gui.i_edit]
 
 # neu
-    def temp_to_all_data(self, entry, row, col):
+    def record_to_temp(self, entry, row, col):
         param = list(self.app.data_store.temp.keys())[0]
         
         self.app.data_store.temp[param][self.app.core.keys[col]][row] = self.app.core.convert_seperator(entry.text())
+
+    def temp_to_all_data(self):
+        param = list(self.app.data_store.temp.keys())[0]
 
         for data in self.app.data_store.all_data.values():
             for p in data.df:
                 if p == param:
                     data.df[p] = self.app.data_store.temp[p]
+        
+        # set file save status on false
+        self.app.core.file_saved = False
 
     def gen_mean_data(self, p, selected):
         self.app.data_store.mean_data = {}

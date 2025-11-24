@@ -27,6 +27,10 @@ class Gui:
         self.i_edit = 0
         self.dat_entries = []  # Liste, um die Daten-Eingabefelder zu speichern
 
+        self.f_filter = "Textdateien (*.txt);" \
+            ";CSV Dateien (*.csv);" \
+            ";Alle Dateien (*.*)"
+
         # ===formatting===
         # self.main_bg
         # self.header_bg
@@ -50,169 +54,6 @@ class Gui:
             color: #000000;\
             font-weight: bold;\
             font-size: 14px;"
-
-    def widgets(self):
-        # delete checkboxes
-        for self.app.widget in self.app.scrollable_frame.winfo_children():
-            self.app.widget.destroy()
-        self.app.data_store.widget_data.clear()
-
-        if self.app.data_store.all_data != {}:
-            for param, data in self.app.data_store.all_data.items():
-                # new row
-                self.app.row = tk.Frame(
-                    self.app.scrollable_frame,
-                    width=self.app.canvas.winfo_width())
-                self.app.row.pack(fill="x", padx=5, pady=2)
-                self.app.row.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-
-                # checkbox
-                var = tk.BooleanVar(value=False)
-                self.app.cb = tk.Checkbutton(
-                    self.app.row,
-                    variable=var,
-                    anchor="w",
-                    justify="left"
-                )
-                self.app.cb.pack(side="left")
-                self.app.cb.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-
-                # entry for parameter name
-                self.app.par_name = tk.Entry(self.app.row, width=25)
-                self.app.par_name.insert(0, str(param))
-                self.app.par_name.pack(
-                    side="left",
-                    padx=(10, 2),
-                    expand='True',
-                    fill='x'
-                )
-                self.app.par_name.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-                self.app.par_name.bind(
-                    self.event[2],
-                    lambda e,
-                    p=param: self.app.events.on_input(p)
-                )
-                self.app.tol_frame = tk.Frame(self.app.row, width=10)
-                self.app.tol_frame.pack(
-                    side="left",
-                    padx=(10, 2),
-                    expand='True',
-                    fill='x'
-                )
-
-                # label for lower tolerance
-                self.app.tol_low_label = tk.Label(
-                    self.app.tol_frame,
-                    text="untere Tol.:"
-                )
-                self.app.tol_low_label.pack(side="left", padx=(10, 2))
-                self.app.tol_low_label.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-
-                # entry for lower tolerance
-                self.app.tol_low = tk.Entry(self.app.tol_frame, width=10)
-                self.app.tol_low.insert(0, str(
-                    self.app.data_store.all_data[param]["lower tol."][0]
-                ))
-                self.app.tol_low.pack(side="left", padx=(10, 2), expand='True')
-                self.app.tol_low.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-                self.app.tol_low.bind(
-                    self.event[2],
-                    lambda e,
-                    p=param: self.app.events.on_input(p)
-                )
-
-                # label for upper tolerance
-                self.app.tol_up_label = tk.Label(
-                    self.app.tol_frame,
-                    text="obere Tol.:"
-                )
-                self.app.tol_up_label.pack(
-                    side="left",
-                    padx=(10, 2)
-                )
-                self.app.tol_up_label.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-
-                # entry for upper tolerance
-                self.app.tol_up = tk.Entry(self.app.tol_frame, width=6)
-                self.app.tol_up.insert(0, str(
-                    self.app.data_store.all_data[param]["upper tol."][0]
-                ))
-                self.app.tol_up.pack(side="left", padx=(10, 20), expand='True')
-                self.app.tol_up.bind(
-                    self.event[1],
-                    lambda e,
-                    p=param: self.app.events.on_edit(p)
-                )
-                self.app.tol_up.bind(
-                    self.event[2],
-                    lambda e,
-                    p=param: self.app.events.on_input(p)
-                )
-
-                # delete-button
-                self.app.remove_btn = tk.Button(
-                    self.app.tol_frame,
-                    text="✕",
-                    command=lambda p=param: self.app.events.on_del(p),
-                    width=2,
-                    relief='flat',
-                    bg='white',
-                    fg='red',
-                    font=("Arial", 10, "bold"),
-                    padx=0, pady=0
-                )
-                self.app.remove_btn.pack(side='right', padx=(2, 0))
-
-                # option-button
-                self.app.options_btn = tk.Button(
-                    self.app.tol_frame,
-                    text="⋮",  # U+22EE Vertical Ellipsis
-                    command=lambda p=param: self.app.events.on_options(p),
-                    width=2,
-                    relief='flat',
-                    bg='white',
-                    fg='black',
-                    font=("Arial", 10),
-                    padx=0, pady=0
-                )
-                self.app.options_btn.pack(side='right', padx=(0, 2))
-
-                # save data in self.widget_data
-                self.app.data_store.widget_data[param] = {
-                    "var": var,
-                    "par_name": self.app.par_name,
-                    "tol_low": self.app.tol_low,
-                    "tol_up": self.app.tol_up
-                }
-
-            self.app.canvas.bind_all(
-                self.event[0],
-                lambda e: self.app.events.on_mousewheel(e, self.app.canvas)
-            )
 
     def navigation_bar(self):
         while self.app.navigation_layout.count():
@@ -275,24 +116,58 @@ class Gui:
         self.app.navigation_layout.addWidget(self.app.add_btn)
         self.app.navigation_layout.addStretch()
 
+    def option_menu(self, p, widget, pos):
+        # gen menu
+        self.app.gui.menu = QMenu(widget)
+
+        # duplicate df
+        self.app.gui.action_dup = self.app.gui.menu.addAction("Duplizieren")
+        self.app.gui.action_dup.triggered.connect(
+            lambda checked=False, p=p: self.app.events.on_duplicate(p)
+        )
+
+        # transform df to mean of dfs
+        self.app.gui.action_mean = self.app.gui.menu.addAction("Mittelwert")
+        self.app.gui.action_mean.triggered.connect(    
+            lambda checked=False, p=p: self.app.events.on_mean(p)
+        )
+
+        # restore df
+        self.app.gui.action_restore = self.app.gui.menu.addAction("Wiederherstellen")
+        self.app.gui.action_restore.triggered.connect(
+            lambda checked=False: self.app.events.on_restore()
+        )
+
+        # execution
+        self.app.gui.menu.exec(widget.mapToGlobal(pos))
+
     def f_new_dialog(self, dialog):
         f_root = QDialog(self.app.central_widget)
-
-        f_filter = "Textdateien (*.txt);" \
-            ";CSV Dateien (*.csv);" \
-            ";Alle Dateien (*.*)"
 
         f_directory, _ = QFileDialog.getSaveFileName(
             f_root,
             dialog,
             "",  # Startverzeichnis (optional)
-            f_filter,  # Dateitypen-Filter
+            self.f_filter,  # Dateitypen-Filter
             options=QFileDialog.Option.ReadOnly
         )
 
         f_name = os.path.basename(f_directory)
 
-        print(f_name)
+        return f_name, f_directory
+    
+    def f_open_dialog(self, dialog):
+        f_root = QDialog(self.app.central_widget)
+
+        f_directory, _ = QFileDialog.getOpenFileName(
+            f_root,
+            dialog,
+            "",  # Startverzeichnis (optional)
+            self.f_filter,  # Dateitypen-Filter
+            options=QFileDialog.Option.ReadOnly
+        )
+
+        f_name = os.path.basename(f_directory)
 
         return f_name, f_directory
 
@@ -623,21 +498,6 @@ class Gui:
         self.app.gui.dat_entries.append(row_entries)
         self.app.gui.i_edit += 1
 
-    def del_edit_entry(self):
-        if self.app.gui.dat_entries:
-            last_row = self.app.gui.dat_entries.pop()
-            for entry in last_row:
-                entry.destroy()
-            self.app.gui.i_edit -= 1
-
-    def select_dir(self):
-        # dialog to choose directory
-        directory = filedialog.askdirectory(
-            parent=self.app.root,
-            title="Ordner auswählen"
-        )
-        return directory
-
     def selection_window(self, data_source):
         # init selected
         selected = []
@@ -751,203 +611,3 @@ class Gui:
         self.app.gui.win.wait_window()
 
         return selected
-
-    def option_menu(self, p, widget, pos):
-        # gen menu
-        self.app.gui.menu = QMenu(widget)
-
-        # duplicate df
-        self.app.gui.action_dup = self.app.gui.menu.addAction("Duplizieren")
-        self.app.gui.action_dup.triggered.connect(
-            lambda checked=False, p=p: self.app.events.on_duplicate(p)
-        )
-
-        # transform df to mean of dfs
-        self.app.gui.action_mean = self.app.gui.menu.addAction("Mittelwert")
-        self.app.gui.action_mean.triggered.connect(    
-            lambda checked=False, p=p: self.app.events.on_mean(p)
-        )
-
-        # restore df
-        self.app.gui.action_restore = self.app.gui.menu.addAction("Wiederherstellen")
-        self.app.gui.action_restore.triggered.connect(
-            lambda checked=False: self.app.events.on_restore()
-        )
-
-        # execution
-        self.app.gui.menu.exec(widget.mapToGlobal(pos))
-
-    def edit_window(self, p):
-        self.app.gui.i_edit = 0
-        self.dat_entries = []
-
-        self.app.gui.root = tk.Toplevel(self.app.root)
-        self.app.gui.root.title(f"Edit {p}")
-        self.app.gui.root.geometry("1200x400")
-        self.app.gui.root.protocol(
-            "WM_DELETE_WINDOW",
-            lambda: self.app.gui.root.destroy()
-        )
-
-        self.app.gui.frame = tk.Frame(self.app.gui.root)
-        self.app.gui.frame.pack(fill="both", expand=True)
-
-        self.app.gui.helper_frame = tk.Frame(self.app.gui.frame)
-        self.app.gui.helper_frame.pack(fill="both", expand=True)
-
-        # scrollable frame
-        self.app.gui.canvas = tk.Canvas(self.app.gui.helper_frame)
-        self.app.gui.scrollable_frame = tk.Frame(self.app.gui.canvas)
-
-        self.app.gui.canvas.bind_all(
-            self.event[0],
-            self.app.events.on_mousewheel
-        )
-
-        # get window id
-        window_id = self.app.gui.canvas.create_window(
-            (0, 0),
-            window=self.app.gui.scrollable_frame,
-            anchor="nw"
-        )
-
-        self.app.gui.scrollable_frame.bind(
-            self.event[3],
-            lambda e: self.app.gui.canvas.configure(scrollregion=self.app.gui.canvas.bbox("all"))
-        )
-
-        # Scrollable-Frame an Canvas-Breite anpassen
-        self.app.gui.canvas.bind(
-            self.event[3],
-            lambda event: self.app.gui.canvas.itemconfig(
-                window_id,
-                width=event.width
-                )
-        )
-
-        self.app.gui.canvas.pack(
-            side="left",
-            fill="both",
-            padx=(10, 10),
-            expand=True
-        )
-
-        self.app.gui.scrollable_frame.grid_rowconfigure(
-            0,
-            weight=1,
-            uniform="equal"
-        )
-
-        self.app.gui.par_label = tk.Label(
-            self.app.gui.scrollable_frame,
-            text="Pos Nr."
-        )
-        self.app.gui.par_label.grid(
-            row=0,
-            column=0,
-            sticky="ew",
-            padx=10,
-            pady=2
-        )
-
-        self.app.gui.actual_label = tk.Label(
-            self.app.gui.scrollable_frame,
-            text="Messwert"
-        )
-        self.app.gui.actual_label.grid(
-            row=0,
-            column=1,
-            sticky="ew",
-            padx=10,
-            pady=2
-        )
-
-        self.app.gui.nominal_label = tk.Label(
-            self.app.gui.scrollable_frame,
-            text="Sollwert"
-        )
-        self.app.gui.nominal_label.grid(
-            row=0,
-            column=2,
-            sticky="ew",
-            padx=10,
-            pady=2
-        )
-
-        self.app.gui.upper_tol_label = tk.Label(
-            self.app.gui.scrollable_frame,
-            text="obere Tol."
-        )
-        self.app.gui.upper_tol_label.grid(
-            row=0,
-            column=3,
-            sticky="ew",
-            padx=10,
-            pady=2
-        )
-
-        self.app.gui.lower_tol_label = tk.Label(
-            self.app.gui.scrollable_frame,
-            text="untere Tol."
-        )
-        self.app.gui.lower_tol_label.grid(
-            row=0,
-            column=4,
-            sticky="ew",
-            padx=10,
-            pady=2
-        )
-
-        for col in range(5):
-            self.app.gui.scrollable_frame.grid_columnconfigure(
-                col,
-                weight=1,
-                uniform="equal"
-            )
-
-        self.app.gui.footer_fr = tk.Frame(self.app.gui.frame)
-        self.app.gui.footer_fr.pack(pady=(10, 10))
-
-        self.app.gui.add_button = tk.Button(
-            self.app.gui.footer_fr,
-            text="Datensatz hinzufügen",
-            command=lambda: self.app.events.on_edit_add()
-        )
-        self.app.gui.add_button.pack(side="left", padx=10)
-
-        self.app.gui.del_button = tk.Button(
-            self.app.gui.footer_fr,
-            text="Datensatz entfernen",
-            command=lambda: self.app.events.on_edit_del()
-        )
-        self.app.gui.del_button.pack(side="left", padx=10)
-
-        self.app.gui.confirm_button = tk.Button(
-            self.app.gui.footer_fr,
-            text="Datenreihe importieren",
-            command=lambda: self.app.events.on_edit_accept()
-        )
-        self.app.gui.confirm_button.pack(side="left", padx=10)
-
-        # add entrys for records in temp
-        param = list(self.app.data_store.temp.keys())[0]
-
-        num_rows = len(self.app.data_store.temp[param]["actual"])
-
-        for _ in range(num_rows):
-            self.app.gui.add_edit_entry()
-
-        for i, row_entries in enumerate(self.app.gui.dat_entries):
-            row_data = [
-                self.app.data_store.temp[param]["pos. nr."][i],
-                self.app.data_store.temp[param]["actual"][i],
-                self.app.data_store.temp[param]["nominal"][i],
-                self.app.data_store.temp[param]["upper tol."][i],
-                self.app.data_store.temp[param]["lower tol."][i],
-            ]
-
-            for j, entry in enumerate(row_entries):
-                entry.delete(0, tk.END)
-                entry.insert(0, row_data[j])
-
-        self.app.gui.root.mainloop()

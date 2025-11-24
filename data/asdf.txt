@@ -1,6 +1,6 @@
 Key: asdf.txt
 Source: _init_
-Directory: C:/Users/koebb/Desktop/Etc/Python/2025/DataForge/data/asdf.txt
+Directory: C:/Users/koebhan/Desktop/Python/DataForge/data/asdf.txt
 Created: None
 DF:
 {}
@@ -12,23 +12,18 @@ DF:
 {
     "Custom_01": {
         "pos. nr.": [
-            "Pos. xxx-01",
-            "Pos. xxx-02"
+            "Pos. xxx-01"
         ],
         "actual": [
-            0.0,
             0.0
         ],
         "nominal": [
-            0.0,
             0.0
         ],
         "lower tol.": [
-            -0.015,
             -0.015
         ],
         "upper tol.": [
-            0.015,
             0.015
         ]
     },
@@ -61,7 +56,7 @@ DF:
             0.0,
             0.0,
             0.0,
-            0.01,
+            0.0,
             0.0
         ],
         "nominal": [
@@ -83,40 +78,6 @@ DF:
             0.015,
             0.015,
             0.015,
-            0.015
-        ]
-    },
-    "Custom_04": {
-        "pos. nr.": [
-            "Pos. xxx-01"
-        ],
-        "actual": [
-            0.0
-        ],
-        "nominal": [
-            0.0
-        ],
-        "lower tol.": [
-            -0.015
-        ],
-        "upper tol.": [
-            0.015
-        ]
-    },
-    "Custom_05": {
-        "pos. nr.": [
-            "Pos. xxx-01"
-        ],
-        "actual": [
-            0.0
-        ],
-        "nominal": [
-            0.0
-        ],
-        "lower tol.": [
-            -0.015
-        ],
-        "upper tol.": [
             0.015
         ]
     }

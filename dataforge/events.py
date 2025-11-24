@@ -23,13 +23,20 @@ class Events:
             canvas.yview_scroll(1, "units")
 
     def on_start_new(self):
-
+        # get name and directory from dialog
         name, directory = self.app.gui.f_new_dialog("New File")
 
-        # init all_data
-        self.app.core.init_data(name, directory)
+        names = [name, "custom"]
+        source = ["_init_", "custom"]
+        dir_ = [directory, None]
+        crtd = [None, None]
+        data = [{},{}]
 
-        # save all_data
+        # init all_data
+        for i, src in enumerate(source):
+            self.app.core.init_data(names[i], src, dir_[i], crtd[i], data[i])
+
+        # save file
         self.app.core.f_save(name, directory)
 
         # main page
@@ -40,8 +47,17 @@ class Events:
         print(self.app.data_store.all_data)
 
     def on_start_open(self):
-        self.app.core.f_open('asd.csv', 'C:/Users/koebb/Desktop/Etc/Python/2025/DataForge/data/asd.csv')
-        self.app.workspace_stack.setCurrentIndex(0)
+        # get name and directory from dialog
+        name, directory = self.app.gui.f_open_dialog("Open")
+
+        # open file
+        self.app.core.f_open(name, directory)
+
+        # main page and update gui
+        for _, entry in self.app.data_store.all_data.items():
+            if '_init_' in entry.source:
+                self.app.workspace_stack.setCurrentIndex(0)
+                self.app.gui.navigation_bar()
         print("Opend...")
 
     def on_start_save(self):
@@ -164,33 +180,19 @@ class Events:
 
 #neu
     def on_data_changed(self, entry, row, col):
-        self.app.core.temp_to_all_data(entry, row, col)
+        # update temp
+        self.app.core.record_to_temp(entry, row, col)
 
-    def on_edit_add(self):
-        self.app.gui.add_edit_entry()
-
-        self.app.core.get_edit_data()
-
-    def on_edit_del(self):
-        self.app.gui.del_edit_entry()
-
-        self.app.core.get_edit_data()
-
-    def on_edit_accept(self):
-        self.app.core.get_edit_data()
-
-        self.app.core.edit_data_to_data()
-
-        self.app.core.gen_all_data()
-
-        self.app.gui.canvas.unbind_all("<MouseWheel>")
-
-        self.app.gui.root.destroy()
+        # update all_data
+        self.app.core.temp_to_all_data()
 
 #neu
     def on_edit_add(self, p):
         # add record in temp
         self.app.core.temp_add_record(p)
+
+        # update all_data
+        self.app.core.temp_to_all_data()
 
         # update data table
         self.app.gui.gen_data_table(p)
@@ -201,6 +203,9 @@ class Events:
 
         # del record in temp
         self.app.core.temp_del_record(p)
+
+        # update all_data
+        self.app.core.temp_to_all_data()
 
         # update data table
         self.app.gui.gen_data_table(p)
@@ -235,7 +240,8 @@ class Events:
             if p in entry.df:
                 del entry.df[p]
 
-        # self.app.core.gen_all_data()
+        # set file save status on false
+        self.app.core.file_saved = False
 
         # self.app.gui.widgets()
         self.app.gui.navigation_bar()

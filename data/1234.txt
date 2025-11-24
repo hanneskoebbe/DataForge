@@ -1,0 +1,12 @@
+Key: 1234.txt
+Source: _init_
+Directory: C:/Users/koebhan/Desktop/Python/DataForge/data/1234.txt
+Created: None
+DF:
+{}
+Key: custom
+Source: custom
+Directory: None
+Created: None
+DF:
+{}
