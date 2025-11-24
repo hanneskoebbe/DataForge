@@ -1,0 +1,12 @@
+Key: csvs.txt
+Source: _init_
+Directory: C:/Users/koebb/Desktop/Etc/Python/2025/DataForge/data/csvs.txt
+Created: None
+DF:
+{}
+Key: custom
+Source: custom
+Directory: None
+Created: None
+DF:
+{}

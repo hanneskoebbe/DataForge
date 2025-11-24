@@ -24,23 +24,32 @@ class Events:
 
     def on_start_new(self):
 
-        # init all_data
-        self.app.data_store.all_data["_init_"] = DataEntry(
-            source = "_init_"
-        )
-        self.app.data_store.all_data["custom"] = DataEntry(
-            source = "custom"
-        )
+        name, directory = self.app.gui.f_new_dialog("New File")
 
-        self.app.workspace_stack.setCurrentIndex(0)
+        # init all_data
+        self.app.core.init_data(name, directory)
+
+        # save all_data
+        self.app.core.f_save(name, directory)
+
+        # main page
+        for _, entry in self.app.data_store.all_data.items():
+            if '_init_' in entry.source:
+                self.app.workspace_stack.setCurrentIndex(0)
+
         print(self.app.data_store.all_data)
 
     def on_start_open(self):
+        self.app.core.f_open('asd.csv', 'C:/Users/koebb/Desktop/Etc/Python/2025/DataForge/data/asd.csv')
         self.app.workspace_stack.setCurrentIndex(0)
         print("Opend...")
 
     def on_start_save(self):
-        self.app.workspace_stack.setCurrentIndex(2)
+        name = list(self.app.data_store.all_data.keys())[0]
+        directory = self.app.data_store.all_data[name].directory
+
+        self.app.core.f_save(name, directory)
+        self.app.workspace_stack.setCurrentIndex(0)
         print("Saved")
 
     def on_import(self):
@@ -206,6 +215,8 @@ class Events:
 
 #neu
     def on_df_selected(self, p):
+        self.app.core.get_temp(p)
+
         self.app.gui.content_header(p)
 
         self.app.gui.content_plot_df(p)

@@ -1,0 +1,75 @@
+Key,Source,Directory,Created,DataFrame
+asd.csv,_init_,C:/Users/koebb/Desktop/Etc/Python/2025/DataForge/data/asd.csv,,
+custom,custom,,,"{
+    ""Custom_01"": {
+        ""pos. nr."": [
+            ""Pos. xxx-01""
+        ],
+        ""actual"": [
+            0.0
+        ],
+        ""nominal"": [
+            0.0
+        ],
+        ""lower tol."": [
+            -0.015
+        ],
+        ""upper tol."": [
+            0.015
+        ]
+    },
+    ""Custom_02"": {
+        ""pos. nr."": [
+            ""Pos. xxx-01""
+        ],
+        ""actual"": [
+            0.0
+        ],
+        ""nominal"": [
+            0.0
+        ],
+        ""lower tol."": [
+            -0.015
+        ],
+        ""upper tol."": [
+            0.015
+        ]
+    },
+    ""Custom_03"": {
+        ""pos. nr."": [
+            ""Pos. xxx-01"",
+            ""Pos. xxx-02"",
+            ""Pos. xxx-03"",
+            ""Pos. xxx-04"",
+            ""Pos. xxx-05""
+        ],
+        ""actual"": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        ""nominal"": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        ""lower tol."": [
+            -0.015,
+            -0.015,
+            -0.015,
+            -0.015,
+            -0.015
+        ],
+        ""upper tol."": [
+            0.015,
+            0.015,
+            0.015,
+            0.015,
+            0.015
+        ]
+    }
+}"

@@ -118,11 +118,11 @@ class MainApp(QMainWindow):
         self.setWindowTitle("DataForge")
 
         # central widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
         # main frame -> vertical layout
-        self.main_frame = QVBoxLayout(central_widget)
+        self.main_frame = QVBoxLayout(self.central_widget)
 
         # menu bar -> horizontal layout
         self.menu_layout = QHBoxLayout()

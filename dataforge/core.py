@@ -1,8 +1,11 @@
 import copy
+import json
+import csv
 import numpy as np
 import pandas as pd
 import os as os
 import matplotlib.pyplot as plt
+from dataforge.data_store import DataEntry
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import date
 
@@ -10,8 +13,117 @@ from datetime import date
 class Core:
     def __init__(self, app):
         self.app = app
+        self.file_saved = False
         self.tolerance = ["lower tol.", "upper tol."]
         self.keys = ["pos. nr.", "actual", "nominal", "lower tol.", "upper tol."]
+
+    def init_data(self, name, dir):      
+        self.app.data_store.all_data[name] = DataEntry(
+            source="_init_",
+            directory=dir
+        )
+        self.app.data_store.all_data["custom"] = DataEntry(
+            source="custom"
+        )
+
+    def f_save(self, name, dir):
+        # file path
+        file_path = os.path.join(dir)
+
+        if name.endswith(".txt"):
+            with open(file_path, 'w') as f:
+                for key, entry in self.app.data_store.all_data.items():
+                    f.write(f"Key: {key}\n")
+                    f.write(f"Source: {entry.source}\n")
+                    f.write(f"Directory: {entry.directory}\n")
+                    f.write(f"Created: {entry.created}\n")
+                    f.write(f"DF:\n{json.dumps(entry.df, indent=4)}\n")
+                    self.app.core.file_saved = True
+        elif name.endswith(".csv"):
+            with open(file_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Write the header row
+                writer.writerow(["Key", "Source", "Directory", "Created", "DataFrame"])
+                
+                # Write the data rows
+                for key, entry in self.app.data_store.all_data.items():
+                    # Convert DataFrame (df) to a string or JSON format for CSV storage
+                    df_json = json.dumps(entry.df, indent=4) if entry.df else ''
+                    writer.writerow([key, entry.source, entry.directory, entry.created, df_json])
+
+                self.app.core.file_saved = True
+
+        print(self.app.data_store.all_data)
+
+    def f_open(self, name, dir):
+        # Construct the full file path
+        file_path = os.path.join(dir)
+
+        if name.endswith(".txt"):
+            with open(file_path, 'r') as f:
+                data = {}
+                key = None
+                entry = None
+                df_key = None
+                df_entry = None
+                row_key = None
+                row = None
+
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("Key:"):
+                        if key and entry:
+                            data[key] = entry  # Store the previous entry before starting a new one
+                        key = line.split(":")[1].strip()  # Extract key
+                        entry = {}
+                    elif line.startswith("Source:"):
+                        entry['source'] = line.split("Source:")[1].strip()
+                    elif line.startswith("Directory:"):
+                        entry['directory'] = line.split("Directory:")[1].strip()
+                    elif line.startswith("Created:"):
+                        entry['created'] = line.split(":")[1].strip()
+                    elif line.startswith("DF:"):
+                        df_str = line.split("DF:")[1].strip()  # Extract the JSON part for df
+                        entry['df'] = json.loads(df_str) if df_str else {}
+                    else:
+                        if line.endswith(": {"):
+                            if df_key and df_entry:
+                                df[key][df_key] = df_entry # Store the previous entry before starting a new one
+                            df_key = line.split(":")[0].strip() # Extract key
+                            df_entry = {}
+                        elif line.endswith(": ["):
+                            if row_key and row:
+                                df_entry[row_key] = 
+                            row_key = line.split(":")[0].strip()  # Extract key
+                            row = []
+                            i_row = 0
+                        elif not line.startswith("]"):
+                            row[i_row] = line
+                            i_row += 1
+                if key and entry:  # Store the last entry
+                    data[key] = entry
+                print(data)
+        elif name.endswith(".csv"):
+            with open(file_path, 'r') as f:
+                reader = csv.reader(f)
+                headers = next(reader)  # Skip header row
+
+                data = {}
+                for row in reader:
+                    key, source, directory, created, df_json = row
+                    df = json.loads(df_json) if df_json else {}  # Deserialize the DataFrame (JSON)
+
+                    entry = {
+                        'source': source,
+                        'directory': directory,
+                        'created': created,
+                        'df': df
+                    }
+
+                    data[key] = entry
+
+                print(data)
 
     def gen_raw_excel_data(self, dir):
         data = {}
@@ -221,7 +333,7 @@ class Core:
                     source[param][key] = new
                 break  # break when parameter is found
 
-# neu
+ # neu
     def temp_add_record(self, p):
         for key in self.app.core.keys:
             if key == "pos. nr.":

@@ -1,5 +1,6 @@
 import tkinter as tk
 import pandas as pd
+import os
 from tkinter import ttk
 from tkinter import filedialog
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PyQt6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout, 
     QGridLayout, QLabel, QLineEdit, QPushButton,
-    QScrollArea, QMenu
+    QScrollArea, QMenu, QFileDialog
 )
 from PyQt6.QtCore import Qt
 
@@ -274,15 +275,34 @@ class Gui:
         self.app.navigation_layout.addWidget(self.app.add_btn)
         self.app.navigation_layout.addStretch()
 
+    def f_new_dialog(self, dialog):
+        f_root = QDialog(self.app.central_widget)
+
+        f_filter = "Textdateien (*.txt);" \
+            ";CSV Dateien (*.csv);" \
+            ";Alle Dateien (*.*)"
+
+        f_directory, _ = QFileDialog.getSaveFileName(
+            f_root,
+            dialog,
+            "",  # Startverzeichnis (optional)
+            f_filter,  # Dateitypen-Filter
+            options=QFileDialog.Option.ReadOnly
+        )
+
+        f_name = os.path.basename(f_directory)
+
+        print(f_name)
+
+        return f_name, f_directory
+
     def content_header(self, p):
         # ====header===
-        for data in self.app.data_store.all_data.values():
-            for param in data.df:
-                if param == p:
-                    minimum = pd.Series(data.df[p]["actual"]).min()
-                    maximum = pd.Series(data.df[p]["actual"]).max()
-                    sigma = pd.Series(data.df[p]["actual"]).std()
-                    mean = pd.Series(data.df[p]["actual"]).mean()
+        data = self.app.data_store.temp[p]["actual"]
+        minimum = pd.Series(data).min()
+        maximum = pd.Series(data).max()
+        sigma = pd.Series(data).std()
+        mean = pd.Series(data).mean()
 
         while self.app.content_header_layout.count():
             item = self.app.content_header_layout.takeAt(0)
@@ -404,11 +424,7 @@ class Gui:
                 item.widget().deleteLater()
 
         idx = "pos. nr."
-
-        for data in self.app.data_store.all_data.values():
-            for param in data.df:
-                if param == p:
-                    df_dict = data.df[param]
+        df_dict = self.app.data_store.temp[p]
 
         # matlpotlib figure + axis
         fig = Figure(figsize=(10, 6))
@@ -463,10 +479,10 @@ class Gui:
         self.app.content_plot_layout.addWidget(self.app.plot_canvas)
 
         self.app.plot_canvas.draw()
-        
+
         # bind double mouseclick
         self.app.plot_canvas.mouseDoubleClickEvent = (
-            lambda e, p_=param:
+            lambda e, p_=p:
                 self.app.events.on_edit_data(p_)
                 if e.button() == Qt.MouseButton.LeftButton else None
         )
