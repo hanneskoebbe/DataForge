@@ -68,6 +68,18 @@ class Events:
         self.app.workspace_stack.setCurrentIndex(0)
         print("Saved")
 
+    def on_start_save_as(self):
+         # get name and directory from dialog
+        name, directory = self.app.gui.f_new_dialog("Save as")
+
+        # write name, directory in all_data
+        self.app.core.change_init(name, directory)
+
+        # save all data
+        self.app.core.f_save(name, directory)
+        self.app.workspace_stack.setCurrentIndex(0)
+        print("Saved")
+
     def on_import(self):
         # dialog to choose directory
         import_dir = self.app.gui.select_dir()

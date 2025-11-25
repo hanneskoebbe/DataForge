@@ -1,0 +1,84 @@
+Key: asdf2.txt
+Source: _init_
+Directory: C:/Users/koebhan/Desktop/Python/DataForge/data/asdf2.txt
+Created: None
+DF:
+{}
+Key: custom
+Source: custom
+Directory: None
+Created: None
+DF:
+{
+    "Custom_01": {
+        "pos. nr.": [
+            "Pos. xxx-01"
+        ],
+        "actual": [
+            0.0
+        ],
+        "nominal": [
+            0.0
+        ],
+        "lower tol.": [
+            -0.015
+        ],
+        "upper tol.": [
+            0.015
+        ]
+    },
+    "Custom_02": {
+        "pos. nr.": [
+            "Pos. xxx-01"
+        ],
+        "actual": [
+            0.0
+        ],
+        "nominal": [
+            0.0
+        ],
+        "lower tol.": [
+            -0.015
+        ],
+        "upper tol.": [
+            0.015
+        ]
+    },
+    "Custom_03": {
+        "pos. nr.": [
+            "Pos. xxx-01",
+            "Pos. xxx-02",
+            "Pos. xxx-03",
+            "Pos. xxx-04",
+            "Pos. xxx-05"
+        ],
+        "actual": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "nominal": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "lower tol.": [
+            -0.015,
+            -0.015,
+            -0.015,
+            -0.015,
+            -0.015
+        ],
+        "upper tol.": [
+            0.015,
+            0.015,
+            0.015,
+            0.015,
+            0.015
+        ]
+    }
+}

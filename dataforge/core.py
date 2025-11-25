@@ -25,6 +25,19 @@ class Core:
             df=data
         )
 
+    def change_init(self, name, directory):
+        new_all_data = {}
+        old_name = list(self.app.data_store.all_data.keys())[0]
+        old_entry = self.app.data_store.all_data[old_name]
+        
+        old_entry.directory = directory
+        new_all_data[name] = old_entry
+        for key, df in self.app.data_store.all_data.items():
+            if key != old_name:
+                new_all_data[key] = df
+
+        self.app.data_store.all_data = new_all_data
+
     def f_save(self, name, dir):
         # file path
         file_path = os.path.join(dir)
