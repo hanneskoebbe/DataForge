@@ -1,8 +1,11 @@
 import copy
+import json
+import csv
 import numpy as np
 import pandas as pd
 import os as os
 import matplotlib.pyplot as plt
+from dataforge.data_store import DataEntry
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import date
 
@@ -10,8 +13,124 @@ from datetime import date
 class Core:
     def __init__(self, app):
         self.app = app
+        self.file_saved = False
         self.tolerance = ["lower tol.", "upper tol."]
         self.keys = ["pos. nr.", "actual", "nominal", "lower tol.", "upper tol."]
+
+    def init_data(self, name, src, dir, crtd, data):      
+        self.app.data_store.all_data[name] = DataEntry(
+            source=src,
+            directory=dir,
+            created=crtd,
+            df=data
+        )
+
+    def change_init(self, name, directory):
+        new_all_data = {}
+        old_name = list(self.app.data_store.all_data.keys())[0]
+        old_entry = self.app.data_store.all_data[old_name]
+        
+        old_entry.directory = directory
+        new_all_data[name] = old_entry
+        for key, df in self.app.data_store.all_data.items():
+            if key != old_name:
+                new_all_data[key] = df
+
+        self.app.data_store.all_data = new_all_data
+
+    def f_save(self, name, dir):
+        # file path
+        file_path = os.path.join(dir)
+
+        if name.endswith(".txt"):
+            with open(file_path, 'w') as f:
+                for key, entry in self.app.data_store.all_data.items():
+                    f.write(f"Key: {key}\n")
+                    f.write(f"Source: {entry.source}\n")
+                    f.write(f"Directory: {entry.directory}\n")
+                    f.write(f"Created: {entry.created}\n")
+                    f.write(f"DF:\n{json.dumps(entry.df, indent=4)}\n")
+                    self.app.core.file_saved = True
+        elif name.endswith(".csv"):
+            with open(file_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Write the header row
+                writer.writerow(["Key", "Source", "Directory", "Created", "DataFrame"])
+                
+                # Write the data rows
+                for key, entry in self.app.data_store.all_data.items():
+                    # Convert DataFrame (df) to a string or JSON format for CSV storage
+                    df_json = json.dumps(entry.df, indent=4) if entry.df else ''
+                    writer.writerow([key, entry.source, entry.directory, entry.created, df_json])
+
+                self.app.core.file_saved = True
+
+    def f_open(self, name, dir):
+        # Construct the full file path
+        file_path = os.path.join(dir)
+
+        if name.endswith(".txt"):
+            with open(file_path, 'r') as f:
+                df = {}
+                row = None
+                key = None
+                df_key = None
+                df_entry = None
+                row_key = None
+
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("Key:"):
+                        if key:
+                            self.app.core.init_data(key, src, dir, crtd, df[key]) # Store before starting a new one
+                        key = line.split(":")[1].strip()  # Extract key
+                        df[key]={}
+                    elif line.startswith("Source:"):
+                        src = line.split("Source:")[1].strip()
+                    elif line.startswith("Directory:"):
+                        dir_val = line.split("Directory:")[1].strip()
+                        dir = None if dir_val == "None" else dir_val
+                    elif line.startswith("Created:"):
+                        crtd_val = line.split("Created:")[1].strip()
+                        crtd = None if crtd_val == "None" else crtd_val
+                    else:
+                        if line.endswith(": {"):
+                            if df_key and df_entry:
+                                df[key][df_key] = df_entry # Store the previous df_entry before starting a new one
+                                if row_key and row:
+                                    df_entry[row_key] = row
+                                    row = None
+                            df_key = json.loads(line.split(":")[0].strip()) # Extract key
+                            df[key][df_key] = {}
+                            df_entry = {}
+                        elif line.endswith(": ["):
+                            if row_key and row:
+                                df_entry[row_key] = row
+                            row_key = json.loads(line.split(":")[0].strip())  # Extract key
+                            row = []
+                        elif not line.startswith("]") and not line.startswith("DF:") and not line.startswith("{") and not line.startswith("}"):
+                            row.append(json.loads(line.strip().rstrip(",")))
+                if df_key and df_entry: # Store the last df_entry
+                    df_entry[row_key] = row
+                    df[key][df_key] = df_entry
+                if key:  # Store the last one
+                    self.app.core.init_data(key, src, dir, crtd, df[key])
+        elif name.endswith(".csv"):
+            with open(file_path, 'r') as f:
+                key = None
+                reader = csv.reader(f)
+                headers = next(reader)  # Skip header row
+                df = {}
+                for row in reader:
+                    if key:
+                        self.app.core.init_data(key, src, dir, crtd, df)
+                    key, src, directory, created, df_json = row
+                    dir = directory or None
+                    crtd = created or None
+                    df = json.loads(df_json) if df_json else {}  # Deserialize the DataFrame (JSON)
+                if key:
+                    self.app.core.init_data(key, src, dir, crtd, df)
 
     def gen_raw_excel_data(self, dir):
         data = {}
@@ -221,7 +340,7 @@ class Core:
                     source[param][key] = new
                 break  # break when parameter is found
 
-# neu
+ # neu
     def temp_add_record(self, p):
         for key in self.app.core.keys:
             if key == "pos. nr.":
@@ -238,19 +357,24 @@ class Core:
 # neu
     def temp_del_record(self, p):
         for key in self.app.core.keys:
-            print(key)
             del self.app.data_store.temp[p][key][self.app.gui.i_edit]
 
 # neu
-    def temp_to_all_data(self, entry, row, col):
+    def record_to_temp(self, entry, row, col):
         param = list(self.app.data_store.temp.keys())[0]
         
         self.app.data_store.temp[param][self.app.core.keys[col]][row] = self.app.core.convert_seperator(entry.text())
+
+    def temp_to_all_data(self):
+        param = list(self.app.data_store.temp.keys())[0]
 
         for data in self.app.data_store.all_data.values():
             for p in data.df:
                 if p == param:
                     data.df[p] = self.app.data_store.temp[p]
+        
+        # set file save status on false
+        self.app.core.file_saved = False
 
     def gen_mean_data(self, p, selected):
         self.app.data_store.mean_data = {}

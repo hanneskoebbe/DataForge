@@ -5,7 +5,7 @@ from typing import Dict, List, Literal, Optional
 
 @dataclass
 class DataEntry:
-    source: Literal["custom", "import"]
+    source: Literal["_init_", "custom", "import"]
     directory: Optional[str] = None
     created: Optional[datetime] = None
     df: Dict[str, Dict[str, List]] = field(default_factory=dict)
@@ -22,9 +22,3 @@ class DataStore:
         self.mean_data = {}
         self.custom_id = 0
         self.all_data: Dict[str, DataEntry] = {}
-
-        self.all_data["custom"] = DataEntry(
-            source = "custom"
-        )
-
-        print(self.all_data)

@@ -1,12 +1,12 @@
 import tkinter as tk
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QScrollArea, QStackedWidget
+from PyQt6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QPushButton, QScrollArea, QStackedWidget, QMenu, QStyle
 from PyQt6.QtGui import QIcon, QRegion, QPixmap
 from PyQt6.QtCore import Qt, QSize, QRect
 from tkinter import ttk
 from dataforge.gui import Gui
 from dataforge.events import Events
 from dataforge.core import Core
-from dataforge.data_store import DataStore
+from dataforge.data_store import DataStore, DataEntry
 
 
 class MainApp(QMainWindow):
@@ -16,113 +16,18 @@ class MainApp(QMainWindow):
         self.events = Events(self)
         self.data_store = DataStore()
         self.core = Core(self)
-        self.run2()
-        self.workspace_stack.setCurrentIndex(0)
+        self.run()
+        self.workspace_stack.setCurrentIndex(2)
 
     def run(self):
-        self.root = tk.Tk()
-        self.root.title("DataForge")
-        self.root.geometry("625x480")
-        self.root.protocol(
-            "WM_DELETE_WINDOW",
-            lambda: self.events.on_closing(self.root)
-        )
-
-        self.frame = tk.Frame(self.root)
-        self.frame.pack(padx=20, pady=5, fill="both", expand=True)
-
-        # # main-menu frame
-        # self.menu_frame = tk.Frame(self.root)
-        # self.menu_frame.pack(side="top", fill="x")
-
-        # self.start_button = tk.Button(self.menu_frame)
-        # self.start_button.pack(text="Start", side="left")
-
-
-        self.head_label = tk.Label(
-            self.frame, text="Parameterliste:",
-            font=("Arial", 20))
-        self.head_label.pack(side="top", fill="x")
-
-        # Scrollbarer Bereich
-        self.canvas = tk.Canvas(self.frame, highlightthickness=0, bd=0)
-        self.scrollable_frame = tk.Frame(self.canvas)
-
-        self.canvas.bind_all("<MouseWheel>", self.events.on_mousewheel)
-
-        # Fenster ID merken
-        self.window_id = self.canvas.create_window(
-            (0, 0),
-            window=self.scrollable_frame,
-            anchor="nw"
-        )
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
-
-        # Scrollable-Frame an Canvas-Breite anpassen
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda event: self.canvas.itemconfig(
-                self.window_id,
-                width=getattr(event, "width", 0)
-            )
-        )
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(
-                scrollregion=self.canvas.bbox("all")
-            )
-        )
-
-        self.canvas.pack(side="left", fill="both", expand=True)
-
-        # # notebook
-        # self.notebook = ttk.Notebook(self.root)
-        # self.notebook.pack(fill="both", expand=True)
-        # self.notebook.config(height=400)
-
-        # Button-Leiste
-        self.button_frame = tk.Frame(self.root)
-        self.button_frame.pack(pady=(10, 10))
-
-        self.import_button = tk.Button(
-            self.button_frame,
-            text="Messberichte importieren",
-            command=self.events.on_import
-        )
-        self.import_button.pack(side="left", padx=10)
-
-        self.button_par = tk.Button(
-            self.button_frame,
-            text="Parameter hinzufuegen",
-            command=self.events.on_add_par
-        )
-        self.button_par.pack(side="left", padx=10)
-
-        self.export_button = tk.Button(
-            self.button_frame,
-            text="PDF exportieren",
-            command=self.gui.plot_all_data
-        )
-        self.export_button.pack(side="left", padx=10)
-
-        self.gui.widgets()
-        self.gui.plot_all_data()
-        self.root.mainloop()
-
-    def run2(self):
         self.setWindowTitle("DataForge")
 
         # central widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
         # main frame -> vertical layout
-        self.main_frame = QVBoxLayout(central_widget)
+        self.main_frame = QVBoxLayout(self.central_widget)
 
         # menu bar -> horizontal layout
         self.menu_layout = QHBoxLayout()
@@ -158,18 +63,47 @@ class MainApp(QMainWindow):
             }
         """)
 
-        def start_button_clicked():
-            print("start test 123")
+        # start button menu
+        self.start_menu = QMenu(self.start_btn)
 
-        self.start_btn.clicked.connect(start_button_clicked)
+        # options for start menu
+        self.start_open = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton),
+            "Open..."
+        )
+        self.start_new = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon),
+            "New project"
+        )
+        self.start_save = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton),
+            "Save"
+        )
+        self.start_save_as = self.start_menu.addAction(
+            self.start_menu.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton),
+            "Save as..."
+        )
+
+        # actions for start menu
+        self.start_open.triggered.connect(self.events.on_start_open)
+        self.start_new.triggered.connect(self.events.on_start_new)
+        self.start_save.triggered.connect(self.events.on_start_save)
+        self.start_save_as.triggered.connect(self.events.on_start_save_as)
+
+        #
+        self.start_btn.clicked.connect(
+            lambda: self.start_menu.exec(
+                self.start_btn.mapToGlobal(self.start_btn.rect().bottomLeft())
+            )
+        )
 
         self.menu_layout.addWidget(self.start_btn)
         self.menu_layout.addStretch()
 
-        # workspace -> stacked widget (main page, edit page, ...)
+        # workspace -> stacked widget (main page, edit page, ..., empty start page)
         self.workspace_stack = QStackedWidget()
 
-        # frame for workspace
+        # main page
         self.page_main = QWidget()
         self.page_main.setStyleSheet("background: #FFFFFF;")
         self.page_main_layout = QHBoxLayout(self.page_main)
@@ -194,7 +128,12 @@ class MainApp(QMainWindow):
         # add parameter button
         self.add_btn = QPushButton("+")
         self.add_btn.setFixedSize(20, 20)
-        self.add_btn.setStyleSheet("background: #FFFFFF")
+        self.add_btn.setStyleSheet(
+                "background: #FFFFFF;\
+                color: #000000;\
+                font-weight: bold;\
+                font-size: 14px;"
+            )
         self.add_btn.clicked.connect(self.events.on_add_par)
 
         # add add_btn to navigation bar
@@ -207,7 +146,7 @@ class MainApp(QMainWindow):
 
         # frame for content
         self.content_frame = QWidget()
-        self.content_frame.setStyleSheet("background: #EEEEEE")
+        self.content_frame.setStyleSheet("background: #FDFDFD")
         self.content_frame.setLayout(self.content_layout)
 
         # layout for content header -> horizontal
@@ -239,14 +178,20 @@ class MainApp(QMainWindow):
         self.page_main_layout.addWidget(self.nav_scroll, 1)
         self.page_main_layout.addWidget(self.content_frame, 9)
 
+        # edit page
         self.page_edit = QWidget()
-        self.page_edit.setStyleSheet("background: #FFFFFF;")
+        self.page_edit.setStyleSheet("background: #EEEEEE;")
         self.page_edit_layout = QVBoxLayout(self.page_edit)
         self.page_edit_layout.setContentsMargins(0, 0, 0, 0)
+
+        # start page -> empty (shown when app is started and no project is opend)
+        self.page_start = QWidget()
+        self.page_start.setStyleSheet("background: #EEEEEE;")
 
         # add content to workspace
         self.workspace_stack.addWidget(self.page_main)
         self.workspace_stack.addWidget(self.page_edit)
+        self.workspace_stack.addWidget(self.page_start)
 
         # add content to main_frame
         self.main_frame.addWidget(self.menu_frame)
